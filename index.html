@@ -314,6 +314,12 @@ body.dark-mode .music-list-item.playing { background: #e0e0e0; color: #121212; }
 body.dark-mode .diary-card { background: #1a1a1a; box-shadow: none; }
 body.dark-mode .mail-card { background: repeating-linear-gradient(0deg, #1a1a1a, #1a1a1a 24px, #222 24px, #222 25px); }
 
+/* 固定美化与定制面板的预览框 */
+#theme-modal .modal-body { overflow: hidden !important; }
+#theme-modal .tab-pane { flex: 1; overflow-y: auto !important; }
+#tab-theme-store { overflow: hidden !important; }
+#theme-store-list { overflow-y: auto !important; padding-right: 4px; }
+
         </style>
         
         
@@ -488,7 +494,7 @@ body.time-style-top .message-wrap { margin-top: 18px !important; }
         .them .bubble { background: #fafafa; color: var(--text-main); border: 1px solid var(--line-light); }
         
         .bubble span { line-height: 1.4; display: block; margin-bottom: 2px; word-break: break-all; white-space: pre-wrap; }
-        .bubble img { max-width: 140px; height: auto; border: 1px solid var(--line-color); display: block; margin: 2px 0 6px 0; }
+        .bubble img { max-width: 140px; min-width: 110px; min-height: 110px; object-fit: contain; height: auto; border: none; display: block; margin: 2px 0 6px 0; background: transparent; }
         .quote-box { font-size: 12px; background: transparent; padding: 6px 8px; margin-bottom: 6px; border-left: 2px solid var(--line-color); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: var(--text-sub); font-weight: 300; }
         
         .bubble-time { font-size: 10px; color: var(--text-sub); margin-top: 4px; line-height: 1; letter-spacing: 0; opacity: 0.7; font-variant-numeric: tabular-nums; display: flex; align-items: center; }
@@ -1248,11 +1254,11 @@ body.time-style-top .message-wrap { margin-top: 18px !important; }
         
         <div class="modal-body" style="padding: 0;">
             <!-- Tab 1: 主题商店 -->
-            <div class="tab-pane active" id="tab-theme-store" style="padding: 16px; gap: 16px;">
+            <div class="tab-pane active" id="tab-theme-store" style="padding: 10px 16px; gap: 8px;">
                 
                 <!-- 实时预览区 -->
                 <style id="theme-preview-style"></style>
-                <div id="theme-preview-box" class="layout-modern" style="border: 1px solid var(--line-color); box-shadow: 4px 4px 0 var(--line-light); background: var(--bg); overflow: hidden; display: flex; flex-direction: column; height: 260px; position: relative; transition: all 0.3s;">
+                <div id="theme-preview-box" class="layout-modern" style="border: 1px solid var(--line-color); box-shadow: 4px 4px 0 var(--line-light); background: var(--bg); overflow: hidden; display: flex; flex-direction: column; height: 250px; position: relative; transition: all 0.3s;">
                     <!-- 假顶栏 -->
                     <div class="top-bar" style="height: 50px; flex-shrink:0; padding: 0 10px; z-index:2;">
                         <div class="tb-them"><div class="tb-avatar-wrap"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="width:28px;height:28px;"></div><div class="tb-info"><div class="tb-name" style="font-size:12px;">Ta</div></div></div>
@@ -1260,7 +1266,7 @@ body.time-style-top .message-wrap { margin-top: 18px !important; }
                         <div class="tb-me"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="width:20px;height:20px;"></div>
                     </div>
                     <!-- 假聊天区 -->
-                    <div class="chat-area preview-chat" style="flex: 1; padding: 10px; gap: 10px; overflow: hidden; background: transparent; pointer-events: none;">
+                    <div class="chat-area preview-chat" style="flex: 1; padding: 2px 10px; gap: 4px; overflow: hidden; background: transparent; pointer-events: none;">
                         <div class="message-wrap them" style="opacity:1; transform:none;"><div class="bubble-container"><img class="bubble-avatar" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="width:24px;height:24px;"><div class="bubble"><span>你好呀！看这里~</span></div></div></div>
                         <div class="message-wrap me" style="opacity:1; transform:none;"><div class="bubble-container"><img class="bubble-avatar" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="width:24px;height:24px;"><div class="bubble"><span>这是新主题的实时预览效果！</span></div></div></div>
                     </div>
@@ -1272,10 +1278,16 @@ body.time-style-top .message-wrap { margin-top: 18px !important; }
                     </div>
                 </div>
 
-                <button class="btn-full primary" id="apply-theme-btn" onclick="applySelectedTheme()" style="font-weight: bold; letter-spacing: 2px;">应用当前选中主题</button>
+                <button class="btn-full primary" id="apply-theme-btn" onclick="applySelectedTheme()" style="font-weight: bold; letter-spacing: 2px;">应用当前选中配置</button>
 
-                <!-- 主题卡片列表 -->
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; overflow-y: auto; padding-bottom: 20px; align-content: flex-start; flex: 1;" id="theme-store-list"></div>
+<!-- 新增：二级分类切换 -->
+<div style="display: flex; gap: 8px; margin-bottom: 4px; margin-top: 8px;">
+    <button class="btn-full" id="store-tab-theme" onclick="switchStoreMode('theme')" style="border-style: solid; border-width: 2px; border-color: var(--text-main); font-weight: bold;">全局主题</button>
+    <button class="btn-full" id="store-tab-bubble" onclick="switchStoreMode('bubble')" style="border-style: dashed; opacity: 0.6;">单品气泡</button>
+</div>
+
+<!-- 主题卡片列表 -->
+<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; overflow-y: auto; padding-bottom: 20px; align-content: flex-start; flex: 1;" id="theme-store-list"></div>
             </div>
 
             <!-- Tab 2: 布局与体验 -->
@@ -4584,13 +4596,150 @@ function readMail(id) {
 }
 function closeReadMailModal() { document.getElementById('read-mail-modal').classList.remove('open'); }
 
+/* ================= 独立气泡预设库 (扩展版) ================= */
+const BUBBLE_PRESETS = [
+    {
+        id: 'b_jelly', name: '果冻糖果', desc: '半透明圆润，带高光',
+        bubbleCSS: 'border-radius: 20px !important; border: none !important; box-shadow: 0 4px 15px rgba(0,0,0,0.08), inset 0 -3px 5px rgba(0,0,0,0.05), inset 0 3px 5px rgba(255,255,255,0.8) !important; padding: 10px 14px !important;',
+        customCSS: `
+.them .bubble { background: #fdfdfd !important; color: #333 !important; }
+.me .bubble { background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%) !important; color: #111 !important; text-shadow: 0 1px 0 rgba(255,255,255,0.5); }
+body.dark-mode .them .bubble { background: #2a2a2a !important; color: #fff !important; box-shadow: 0 4px 15px rgba(0,0,0,0.5), inset 0 2px 3px rgba(255,255,255,0.1) !important;}
+body.dark-mode .me .bubble { background: linear-gradient(135deg, #325a8c 0%, #1e3c72 100%) !important; color: #fff !important; text-shadow: 0 1px 0 rgba(0,0,0,0.5); box-shadow: 0 4px 15px rgba(0,0,0,0.5), inset 0 2px 3px rgba(255,255,255,0.1) !important;}`
+    },
+    {
+        id: 'b_glass', name: '毛玻璃', desc: '微透磨砂，适应各种壁纸',
+        bubbleCSS: 'border-radius: 16px !important; border: 1px solid rgba(255,255,255,0.3) !important; backdrop-filter: blur(12px) !important; box-shadow: 0 4px 10px rgba(0,0,0,0.05) !important; padding: 10px 14px !important;',
+        customCSS: `
+.them .bubble { background: rgba(255,255,255,0.6) !important; color: #111 !important; }
+.me .bubble { background: rgba(255, 200, 220, 0.6) !important; color: #111 !important; }
+body.dark-mode .them .bubble { background: rgba(30,30,30,0.6) !important; color: #eee !important; border-color: rgba(255,255,255,0.1) !important;}
+body.dark-mode .me .bubble { background: rgba(100, 50, 80, 0.6) !important; color: #eee !important; border-color: rgba(255,255,255,0.1) !important;}`
+    },
+    {
+        id: 'b_neu', name: '新拟态浮雕', desc: '高级同色系凸起感',
+        bubbleCSS: 'border-radius: 18px !important; border: none !important; padding: 10px 14px !important;',
+        customCSS: `
+.chat-area { background: #e0e5ec !important; }
+.them .bubble { background: #e0e5ec !important; color: #333 !important; box-shadow: 5px 5px 10px #bec3c9, -5px -5px 10px #ffffff !important; }
+.me .bubble { background: #e0e5ec !important; color: #4a90e2 !important; font-weight: 500 !important; box-shadow: inset 5px 5px 10px #bec3c9, inset -5px -5px 10px #ffffff !important; }
+body.dark-mode .chat-area { background: #26282b !important; }
+body.dark-mode .them .bubble { background: #26282b !important; color: #ccc !important; box-shadow: 5px 5px 10px #1a1b1d, -5px -5px 10px #323539 !important; }
+body.dark-mode .me .bubble { background: #26282b !important; color: #4a90e2 !important; box-shadow: inset 5px 5px 10px #1a1b1d, inset -5px -5px 10px #323539 !important; }`
+    },
+        {
+        id: 'b_cyber', name: '暗夜霓虹', desc: '低饱和赛博，冰蓝与幽紫',
+        bubbleCSS: 'border-radius: 4px !important; border: 1px solid !important; padding: 10px 14px !important; font-family: monospace, sans-serif !important;',
+        customCSS: `
+.chat-area { background: #13141a !important; }
+.date-divider { color: #8e9bb0 !important; }
+.them .bubble { background: rgba(20,30,40,0.8) !important; color: #7cb8ff !important; border-color: #4a7ab5 !important; box-shadow: inset 0 0 8px rgba(124,184,255,0.1), 0 0 4px rgba(74,122,181,0.5) !important; }
+.me .bubble { background: rgba(35,20,40,0.8) !important; color: #d09cf5 !important; border-color: #925fae !important; box-shadow: inset 0 0 8px rgba(208,156,245,0.1), 0 0 4px rgba(146,95,174,0.5) !important; }
+.typing-status-bubble { background: #13141a !important; border: 1px solid #4a7ab5 !important; color: #7cb8ff !important; }`
+    },
+    {
+        id: 'b_origami', name: '折纸小角', desc: '扁平化直角折纸阴影',
+        bubbleCSS: 'border-radius: 0 !important; border: none !important; padding: 10px 14px !important; position: relative !important;',
+        customCSS: `
+.them .bubble { background: #fff !important; color: #333 !important; box-shadow: 3px 3px 0 rgba(0,0,0,0.1) !important; }
+.me .bubble { background: #fca311 !important; color: #fff !important; box-shadow: -3px 3px 0 rgba(0,0,0,0.1) !important; }
+.them .bubble::after { content: ''; position: absolute; top: 0; left: 0; border-width: 8px; border-style: solid; border-color: #e0e0e0 #fff #fff #e0e0e0; }
+.me .bubble::after { content: ''; position: absolute; bottom: 0; right: 0; border-width: 8px; border-style: solid; border-color: #e6920d #e6920d transparent transparent; }`
+    },
+    // 下面是这次为你全新加入的 6 款气泡！
+        {
+        id: 'b_mochi', name: '软糯奶糕', desc: '温柔奶油色系，百搭无背景',
+        bubbleCSS: 'border-radius: 20px !important; border: 2px solid #fff !important; box-shadow: 0 4px 8px rgba(0,0,0,0.04) !important; padding: 12px 16px !important; font-weight: 500 !important;',
+        customCSS: `
+.them .bubble { background: #fdf8f5 !important; color: #6d5c53 !important; border-bottom-left-radius: 6px !important; }
+.me .bubble { background: #fbeee8 !important; color: #855f5e !important; border-bottom-right-radius: 6px !important; border-color: #fff !important; }
+body.dark-mode .them .bubble { background: #2a2624 !important; color: #d4c8c2 !important; border-color: #3b3532 !important; box-shadow: none !important;}
+body.dark-mode .me .bubble { background: #362829 !important; color: #e3c4c5 !important; border-color: #4a3738 !important; box-shadow: none !important;}`
+    },
+    {
+        id: 'b_sketch', name: '手账涂鸦', desc: '随性虚线与纸质底色',
+        bubbleCSS: 'border: 2px dashed var(--line-color) !important; padding: 12px 16px !important; box-shadow: 2px 3px 0 rgba(0,0,0,0.05) !important;',
+        customCSS: `
+.them .bubble { background: #fffdf5 !important; color: #4a4a4a !important; border-radius: 20px 5px 25px 4px !important; }
+.me .bubble { background: #f0f8ff !important; color: #333 !important; border-radius: 5px 20px 4px 25px !important; }
+body.dark-mode .them .bubble { background: #2a2824 !important; color: #e0e0e0 !important; }
+body.dark-mode .me .bubble { background: #1c242b !important; color: #e0e0e0 !important; }`
+    },
+    {
+        id: 'b_aurora', name: '极光渐变', desc: '高级渐变色，纯白文字',
+        bubbleCSS: 'border: none !important; border-radius: 20px !important; color: #fff !important; font-weight: bold !important; padding: 10px 14px !important; box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;',
+        customCSS: `
+.them .bubble { background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%) !important; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+.me .bubble { background: linear-gradient(120deg, #fccb90 0%, #d57eeb 100%) !important; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+body.dark-mode .them .bubble { background: linear-gradient(120deg, #2a5298 0%, #1e3c72 100%) !important; }
+body.dark-mode .me .bubble { background: linear-gradient(120deg, #b224ef 0%, #7579ff 100%) !important; }`
+    },
+    {
+        id: 'b_cloud', name: '轻盈云朵', desc: '极致去线框，超大圆角',
+        bubbleCSS: 'border: none !important; border-radius: 24px !important; box-shadow: 0 8px 24px rgba(0,0,0,0.04) !important; padding: 12px 18px !important; font-weight: 400 !important;',
+        customCSS: `
+.chat-area { background: #fafbfc !important; }
+.them .bubble { background: #ffffff !important; color: #333 !important; }
+.me .bubble { background: #111111 !important; color: #fff !important; }
+body.dark-mode .chat-area { background: #000 !important; }
+body.dark-mode .them .bubble { background: #1c1c1e !important; color: #eee !important; box-shadow: none !important;}
+body.dark-mode .me .bubble { background: #e0e0e0 !important; color: #111 !important; box-shadow: none !important;}`
+    },
+    {
+        id: 'b_comic', name: '漫画对白', desc: '黑白漫画风，半圆带尾巴',
+        bubbleCSS: 'border: 2px solid var(--text-main) !important; border-radius: 50% / 20px !important; padding: 10px 18px !important; background: var(--bg) !important; font-weight: bold !important; position: relative !important;',
+        customCSS: `
+.them .bubble { box-shadow: -3px 3px 0 var(--line-light) !important; color: var(--text-main) !important; }
+.me .bubble { box-shadow: 3px 3px 0 var(--line-light) !important; color: var(--text-main) !important; }
+.them .bubble::before { content: ''; position: absolute; bottom: -5px; left: 10px; border-width: 10px 10px 0 0; border-style: solid; border-color: var(--text-main) transparent transparent transparent; transform: rotate(15deg); }
+.me .bubble::before { content: ''; position: absolute; bottom: -5px; right: 10px; border-width: 10px 0 0 10px; border-style: solid; border-color: var(--text-main) transparent transparent transparent; transform: rotate(-15deg); }`
+    },
+    {
+        id: 'b_note', name: '彩色便利贴', desc: '方方正正，左侧彩色高亮',
+        bubbleCSS: 'border-radius: 0 !important; border: none !important; border-left: 4px solid !important; padding: 10px 14px !important; box-shadow: 2px 2px 5px rgba(0,0,0,0.05) !important;',
+        customCSS: `
+.them .bubble { background: #fffde7 !important; color: #333 !important; border-left-color: #ffd54f !important; }
+.me .bubble { background: #e8f5e9 !important; color: #333 !important; border-left-color: #81c784 !important; }
+body.dark-mode .them .bubble { background: #2c2b22 !important; color: #ddd !important; border-left-color: #fbc02d !important; }
+body.dark-mode .me .bubble { background: #1e2b20 !important; color: #ddd !important; border-left-color: #66bb6a !important; }`
+    },
+        {
+        id: 'b_watercolor', name: '微醺水彩', desc: '低饱和莫兰迪渐变',
+        bubbleCSS: 'border-radius: 20px !important; border: none !important; box-shadow: 0 4px 15px rgba(0,0,0,0.03) !important; padding: 12px 16px !important;',
+        customCSS: `
+.chat-area { background: #fcfbf9 !important; }
+.them .bubble { background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%) !important; color: #5a5a5a !important; border-bottom-left-radius: 4px !important; }
+.me .bubble { background: linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%) !important; color: #fff !important; border-bottom-right-radius: 4px !important; }
+body.dark-mode .chat-area { background: #1a1a1a !important; }
+body.dark-mode .them .bubble { background: #2a2a2a !important; color: #ccc !important; }
+body.dark-mode .me .bubble { background: linear-gradient(120deg, #51366b 0%, #2f567a 100%) !important; color: #ddd !important; }`
+    },
+    {
+        id: 'b_ticket', name: '电影票根', desc: '边缘虚线切割，复古质感',
+        bubbleCSS: 'border-radius: 4px !important; border: 1px solid var(--line-light) !important; padding: 12px 16px !important; position: relative !important; box-shadow: 2px 2px 0 var(--line-light) !important;',
+        customCSS: `
+.them .bubble { background: #faf8f5 !important; color: #333 !important; border-left: 4px dashed var(--line-color) !important; }
+.me .bubble { background: #f4f6fa !important; color: #333 !important; border-right: 4px dashed var(--line-color) !important; }
+body.dark-mode .them .bubble { background: #222 !important; color: #ccc !important; border-color: #444 !important; border-left: 4px dashed #666 !important;}
+body.dark-mode .me .bubble { background: #1c2026 !important; color: #ccc !important; border-color: #444 !important; border-right: 4px dashed #666 !important;}`
+    },
+    {
+        id: 'b_outline', name: '极简线框', desc: '透明底色，纯线框主义',
+        bubbleCSS: 'border-radius: 24px !important; border: 1px solid var(--line-color) !important; padding: 10px 16px !important; background: transparent !important; box-shadow: none !important;',
+        customCSS: `
+.them .bubble { color: var(--text-main) !important; border-bottom-left-radius: 4px !important; }
+.me .bubble { color: var(--text-main) !important; border-bottom-right-radius: 4px !important; }
+`
+    }
+];
+
 /* ================= 预设主题库 (极致深度还原 + 扩充版) ================= */
 const THEME_PRESETS = [
-    {
-        id: 'trace', name: 'Trace 细线', desc: '原汁原味的极简骨架 (默认)',
-        layout: 'layout-modern', bg: '', radius: 0,
-        bubbleCSS: '', customCSS: ''
-    },
+{
+    id: 'trace', name: 'Trace 细线', desc: '原汁原味的极简骨架 (默认)',
+    layout: 'layout-modern', bg: '', radius: 0,
+    bubbleCSS: '', customCSS: '.bubble img { border: 1px solid var(--line-color) !important; }'
+},
     {
         id: 'line_classic', name: 'LINE / Kakao', desc: '完美复刻灰蓝底+黄气泡，暗黑不翻车',
         layout: 'layout-ios', bg: '#9bbad4', radius: 50,
@@ -5249,6 +5398,22 @@ body.dark-mode #msg-input { background: #1a1a1a !important; color: #fff !importa
 ];
 
 let selectedThemeId = 'trace';
+let selectedBubbleId = 'b_jelly';
+let storeMode = 'theme'; // 当前商店处于什么模式: 'theme' 还是 'bubble'
+
+function switchStoreMode(mode) {
+    storeMode = mode;
+    const btnTheme = document.getElementById('store-tab-theme');
+    const btnBubble = document.getElementById('store-tab-bubble');
+    if(mode === 'theme') {
+        btnTheme.style.cssText = "border-style: solid; border-width: 2px; border-color: var(--text-main); font-weight: bold;";
+        btnBubble.style.cssText = "border-style: dashed; opacity: 0.6;";
+    } else {
+        btnBubble.style.cssText = "border-style: solid; border-width: 2px; border-color: var(--text-main); font-weight: bold;";
+        btnTheme.style.cssText = "border-style: dashed; opacity: 0.6;";
+    }
+    renderThemeStore();
+}
 
 // 初始化并打开主题面板
 function openThemeModal() { 
@@ -5268,49 +5433,58 @@ function switchThemeTab(tabId) {
     document.getElementById(tabId).classList.add('active'); 
 }
 
-// 渲染主题列表
+// 渲染商店列表
 function renderThemeStore() {
     const list = document.getElementById('theme-store-list');
     list.innerHTML = '';
     
-    THEME_PRESETS.forEach(theme => {
+    // 根据当前模式选择数据源
+    const dataSource = storeMode === 'theme' ? THEME_PRESETS : BUBBLE_PRESETS;
+    const activeId = storeMode === 'theme' ? selectedThemeId : selectedBubbleId;
+    
+    dataSource.forEach(item => {
         const card = document.createElement('div');
-        card.style.cssText = `border: 1px solid var(--line-color); padding: 12px; cursor: pointer; background: var(--bg); transition: all 0.2s; ${theme.id === selectedThemeId ? 'box-shadow: 4px 4px 0 var(--text-main); border-width: 2px;' : 'box-shadow: 2px 2px 0 var(--line-light);'}`;
+        card.style.cssText = `border: 1px solid var(--line-color); padding: 12px; cursor: pointer; background: var(--bg); transition: all 0.2s; ${item.id === activeId ? 'box-shadow: 4px 4px 0 var(--text-main); border-width: 2px;' : 'box-shadow: 2px 2px 0 var(--line-light);'}`;
         card.innerHTML = `
-            <div style="font-size:14px; font-weight:bold; margin-bottom:4px; color:var(--text-main);">${theme.name}</div>
-            <div style="font-size:11px; color:var(--text-sub); font-weight:300; line-height:1.4;">${theme.desc}</div>
+            <div style="font-size:14px; font-weight:bold; margin-bottom:4px; color:var(--text-main);">${item.name}</div>
+            <div style="font-size:11px; color:var(--text-sub); font-weight:300; line-height:1.4;">${item.desc}</div>
         `;
         card.onclick = () => {
-            selectedThemeId = theme.id;
+            if (storeMode === 'theme') { selectedThemeId = item.id; } 
+            else { selectedBubbleId = item.id; }
             renderThemeStore(); // 刷新高亮状态
-            previewTheme(theme); // 实时渲染预览框
+            previewTheme(item); // 实时渲染预览框
         };
         list.appendChild(card);
     });
     
     // 默认预览当前选中的
-    previewTheme(THEME_PRESETS.find(t => t.id === selectedThemeId) || THEME_PRESETS[0]);
+    previewTheme(dataSource.find(t => t.id === activeId) || dataSource[0]);
 }
 
-// 将选中主题的 CSS 作用在预览框上
-function previewTheme(theme) {
+// 将选中配置的 CSS 作用在预览框上
+function previewTheme(config) {
     const previewBox = document.getElementById('theme-preview-box');
-    previewBox.className = theme.layout; // 替换顶栏排版
     
+    // 如果是切换全局主题，顺便预览顶栏排版
+    if(storeMode === 'theme') {
+        previewBox.className = config.layout;
+    }
+
     let styleStr = '';
     // 气泡
-    if (theme.bubbleCSS) styleStr += `#theme-preview-box .bubble { ${theme.bubbleCSS} } `;
-    // 头像圆角
-    if (theme.radius !== undefined) styleStr += `#theme-preview-box img { border-radius: ${theme.radius}% !important; } `;
-    // 壁纸 (简单判定是否是链接还是色值)
-    if (theme.bg) {
-        const bgVal = (theme.bg.startsWith('#') || theme.bg.startsWith('linear')) ? theme.bg : `url('${theme.bg}') center/cover`;
+    if (config.bubbleCSS) styleStr += `#theme-preview-box .bubble { ${config.bubbleCSS} } `;
+    // 头像圆角 (仅在全局主题有)
+    if (config.radius !== undefined) styleStr += `#theme-preview-box img { border-radius: ${config.radius}% !important; } `;
+    // 壁纸 (仅在全局主题有)
+    if (config.bg) {
+        const bgVal = (config.bg.startsWith('#') || config.bg.startsWith('linear')) ? config.bg : `url('${config.bg}') center/cover`;
         styleStr += `#theme-preview-box .preview-chat { background: ${bgVal} !important; } `;
     }
 
-    // 智能解析 CustomCSS，将所有选择器限定在 #theme-preview-box 内，防止污染全局
-    if (theme.customCSS) {
-        const scopedCss = theme.customCSS.replace(/(^|\})\s*([^{]+)\s*\{/g, (match, p1, p2) => {
+    // 智能解析 CustomCSS，将所有选择器限定在 #theme-preview-box 内
+    if (config.customCSS) {
+        const scopedCss = config.customCSS.replace(/(^|\})\s*([^{]+)\s*\{/g, (match, p1, p2) => {
             const selectors = p2.split(',').map(s => `#theme-preview-box ${s.trim()}`).join(', ');
             return `${p1} ${selectors} {`;
         });
@@ -5320,26 +5494,30 @@ function previewTheme(theme) {
     document.getElementById('theme-preview-style').innerHTML = styleStr;
 }
 
-// 确认应用主题（覆盖至 appState）
+// 确认应用配置（覆盖至 appState）
 function applySelectedTheme() {
-    const theme = THEME_PRESETS.find(t => t.id === selectedThemeId);
-    if (!theme) return;
-    
-    // 将预设参数强行写入输入框，并触发更新
-    document.getElementById('set-topbar-layout').value = theme.layout;
-    document.getElementById('set-bubble-css').value = theme.bubbleCSS;
-    document.getElementById('set-custom-css').value = theme.customCSS;
-    
-    // 滑块同步
-    const radiusSlider = document.getElementById('set-avatar-radius');
-    if(radiusSlider) { radiusSlider.value = theme.radius; updateRadiusRealtime(); }
-    
-    // 壁纸应用
-    appState.settings.chatWallpaper = theme.bg;
+    if (storeMode === 'theme') {
+        const theme = THEME_PRESETS.find(t => t.id === selectedThemeId);
+        if (!theme) return;
+        document.getElementById('set-topbar-layout').value = theme.layout;
+        document.getElementById('set-bubble-css').value = theme.bubbleCSS;
+        document.getElementById('set-custom-css').value = theme.customCSS;
+        
+        const radiusSlider = document.getElementById('set-avatar-radius');
+        if(radiusSlider) { radiusSlider.value = theme.radius; updateRadiusRealtime(); }
+        appState.settings.chatWallpaper = theme.bg;
+        showToast(`✅ 已应用主题：${theme.name}`);
+    } else {
+        const bubble = BUBBLE_PRESETS.find(b => b.id === selectedBubbleId);
+        if (!bubble) return;
+        // 仅仅替换气泡代码和气泡拓展的定制颜色代码，保留布局和壁纸
+        document.getElementById('set-bubble-css').value = bubble.bubbleCSS;
+        document.getElementById('set-custom-css').value = bubble.customCSS;
+        showToast(`✅ 已应用独立气泡：${bubble.name}`);
+    }
 
-    // 手动调用核心更新函数保存
+    // 保存并刷新
     updateSettings();
-    showToast(`✅ 已应用主题：${theme.name}`);
 }
 
 /* ================= 🚑 紧急救援协议 (苛刻版：定点狂戳) ================= */
