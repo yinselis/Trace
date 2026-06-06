@@ -1851,15 +1851,20 @@ function rebuildThemeCSS() {
     let finalCSS = "";
     if (appState.settings.customFont) { finalCSS += `@font-face { font-family: 'CustomThemeFont'; src: url('${appState.settings.customFont}'); } * { font-family: 'CustomThemeFont', sans-serif !important; } `; } else if (appState.settings.fontUrl) { finalCSS += `@font-face { font-family: 'CustomThemeFont'; src: url('${appState.settings.fontUrl}'); } * { font-family: 'CustomThemeFont', sans-serif !important; } `; }
     
+    if (appState.settings.bubbleCSS) { finalCSS += `.bubble { ${appState.settings.bubbleCSS} } `; }
+    
+    // 1. 先把主题自带的 CSS 放进来
+    finalCSS += appState.settings.customCSS || ""; 
+    
+    // 2. 把你的自定义壁纸放到最后，并且增加暗黑模式的选择器，确保神挡杀神佛挡杀佛！
     if (appState.settings.chatWallpaper) {
         if(appState.settings.chatWallpaper.startsWith('#')) {
-            finalCSS += `.chat-area { background: ${appState.settings.chatWallpaper} !important; } `;
+            finalCSS += `.chat-area, body.dark-mode .chat-area { background: ${appState.settings.chatWallpaper} !important; } `;
         } else {
-            finalCSS += `.chat-area { background: url('${appState.settings.chatWallpaper}') center/cover no-repeat !important; } `;
+            finalCSS += `.chat-area, body.dark-mode .chat-area { background: url('${appState.settings.chatWallpaper}') center/cover no-repeat !important; } `;
         }
     }
-    if (appState.settings.bubbleCSS) { finalCSS += `.bubble { ${appState.settings.bubbleCSS} } `; }
-    finalCSS += appState.settings.customCSS || ""; 
+    
     document.getElementById('theme-style-node').innerHTML = finalCSS;
 }
 
@@ -5524,7 +5529,7 @@ function applySelectedTheme() {
         
         const radiusSlider = document.getElementById('set-avatar-radius');
         if(radiusSlider) { radiusSlider.value = theme.radius; updateRadiusRealtime(); }
-        appState.settings.chatWallpaper = theme.bg;
+        // appState.settings.chatWallpaper = theme.bg;
         showToast(`✅ 已应用主题：${theme.name}`);
     } else {
         const bubble = BUBBLE_PRESETS.find(b => b.id === selectedBubbleId);
