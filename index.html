@@ -2272,7 +2272,7 @@ async function uploadWallpaper(e) { if(!e.target.files[0]) return; appState.sett
 async function clearWallpaper() { appState.settings.chatWallpaper = ""; rebuildThemeCSS(); saveState(); await uiAlert("已恢复默认壁纸"); }
 document.getElementById('me-avatar-upload').onchange = async (e) => { if(e.target.files[0]) { appState.settings.meAvatar = await compressImage(e.target.files[0], 200); applySettingsToUI(); saveState(); renderMessages(); } e.target.value = ''; };
 function openSettingsModal() { updateStatsDisplay(); document.getElementById('settings-modal').classList.add('open'); } function closeSettingsModal() { document.getElementById('settings-modal').classList.remove('open'); }
-function switchTab(tabId) { document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active')); event.target.classList.add('active'); document.getElementById(tabId).classList.add('active'); }
+function switchTab(tabId) { document.querySelectorAll('#settings-modal .tab-btn').forEach(b => b.classList.remove('active')); document.querySelectorAll('#settings-modal .tab-pane').forEach(p => p.classList.remove('active')); event.target.classList.add('active'); document.getElementById(tabId).classList.add('active'); }
 
 /* ================= 交互核心区域 ================= */
 
@@ -5442,6 +5442,12 @@ function switchStoreMode(mode) {
 // 初始化并打开主题面板
 function openThemeModal() { 
     document.getElementById('theme-modal').classList.add('open'); 
+    // 强制恢复默认的第一页，防止白屏
+    document.querySelectorAll('#theme-modal .tab-btn').forEach(b => b.classList.remove('active')); 
+    document.querySelectorAll('#theme-modal .tab-pane').forEach(p => p.classList.remove('active')); 
+    document.querySelector('#theme-modal .tab-btn').classList.add('active'); 
+    document.getElementById('tab-theme-store').classList.add('active'); 
+    
     renderThemeStore();
 }
 // 关闭主题面板
