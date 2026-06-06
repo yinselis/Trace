@@ -387,14 +387,14 @@ body.dark-mode .mail-card { background: repeating-linear-gradient(0deg, #1a1a1a,
         .layout-reverse .tb-tools { margin-right: auto; margin-left: 8px; flex-direction: row-reverse; }
         .layout-reverse .tb-me { padding-right: 8px; border-right: 1px solid var(--line-light); }
 
-        /* 布局5：iOS原生 (信息纯居中) */
-        .layout-ios { justify-content: space-between; }
-        .layout-ios .tb-them { position: absolute; left: 50%; transform: translateX(-50%); flex-direction: column; align-items: center; gap: 2px; margin-left: 0; }
-        .layout-ios .tb-them .tb-avatar-wrap img { width: 26px; height: 26px; border-radius: 50%; }
-        .layout-ios .tb-info { align-items: center; }
-        .layout-ios .tb-name { font-size: 13px; font-weight: bold; }
-        .layout-ios .tb-me { order: -1; } /* 魔法：利用flex order把我的头像挤到最左边 */
-        .layout-ios .tb-tools { gap: 2px; margin-right: -4px; }
+        /* 布局5：iOS原生 (全居中展开版) */
+.layout-ios { flex-direction: column; justify-content: center; align-items: center; height: auto; padding: 10px 16px 8px 16px; gap: 4px; }
+.layout-ios .tb-them { position: relative; left: auto; transform: none; flex-direction: column; align-items: center; gap: 2px; margin: 0; }
+.layout-ios .tb-them .tb-avatar-wrap img { width: 30px; height: 30px; border-radius: 50%; }
+.layout-ios .tb-info { align-items: center; }
+.layout-ios .tb-name { font-size: 13px; font-weight: bold; }
+.layout-ios .tb-me { display: none; }
+.layout-ios .tb-tools { margin: 0; justify-content: center; width: 100%; gap: 12px; }
 
         /* 布局6：手帐贴纸胶囊 */
         .layout-float { border-bottom: 1px dashed var(--line-light); }
@@ -450,7 +450,25 @@ body.dark-mode .mail-card { background: repeating-linear-gradient(0deg, #1a1a1a,
         .icon-btn.active { background: var(--text-main); color: #fff; box-shadow: 0 0 0 var(--line-color); transform: translate(2px, 2px); } 
         .btn-noshadow { border: none; box-shadow: none; width: auto; height: auto; padding: 6px; }
         .btn-noshadow:active { transform: scale(0.9); box-shadow: none; }
-        
+        /* 布局与体验扩展开关控制 */
+body.hide-avatar .bubble-avatar { display: none !important; }
+body.hide-time .bubble-time { display: none !important; }
+body.hide-read .read-status { display: none !important; }
+
+/* 时间戳样式控制 */
+/* 外侧底部 */
+body.time-style-outside .bubble { position: relative !important; overflow: visible !important; }
+body.time-style-outside .bubble-time { position: absolute !important; bottom: 0 !important; white-space: nowrap !important; background: transparent !important;}
+body.time-style-outside .me .bubble-time { right: calc(100% + 6px) !important; flex-direction: row-reverse !important; justify-content: flex-start !important; }
+body.time-style-outside .them .bubble-time { left: calc(100% + 6px) !important; flex-direction: row !important; justify-content: flex-start !important;}
+
+/* 外侧顶部 */
+body.time-style-top .bubble { position: relative !important; overflow: visible !important; }
+body.time-style-top .bubble-time { position: absolute !important; bottom: 100% !important; top: auto !important; margin-bottom: 2px !important; white-space: nowrap !important; background: transparent !important;}
+body.time-style-top .me .bubble-time { right: 0 !important; flex-direction: row-reverse !important; }
+body.time-style-top .them .bubble-time { left: 0 !important; flex-direction: row !important; }
+body.time-style-top .message-wrap { margin-top: 18px !important; }
+
         /* 聊天区域 */
         .chat-area { flex: 1; overflow-y: auto; padding: 24px 16px 20px 16px; display: flex; flex-direction: column; gap: 12px; }
         .date-divider { text-align: center; font-size: 11px; color: var(--text-sub); margin: 8px 0; font-weight: 300; letter-spacing: 1px; }
@@ -502,7 +520,7 @@ body.dark-mode .mail-card { background: repeating-linear-gradient(0deg, #1a1a1a,
 .message-wrap.draft .read-status { 
     display: none !important; 
 }
-
+.message-wrap.draft .bubble::before, .message-wrap.draft .bubble::after { display: none !important; }
 /* 给输入框加一个占位符提示功能 */
 .input-box:empty::before { content: attr(data-placeholder); color: var(--line-light); pointer-events: none; font-size: 13px; }
 
@@ -647,12 +665,12 @@ body.dark-mode .mail-card { background: repeating-linear-gradient(0deg, #1a1a1a,
         <!-- 顶栏 (动态主题框架) -->
     <div class="top-bar layout-modern" id="main-top-bar">
         <!-- 左/对方信息 -->
-        <div class="tb-them" onclick="openRoleModal()">
-            <div class="tb-avatar-wrap">
+        <div class="tb-them">
+            <div class="tb-avatar-wrap" onclick="document.getElementById('them-avatar-upload').click();">
                 <input type="file" id="them-avatar-upload" accept="image/*" onchange="uploadThemAvatar(event)" style="display:none;">
-                <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" id="them-avatar" onclick="document.getElementById('them-avatar-upload').click(); event.stopPropagation();">
+                <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" id="them-avatar">
             </div>
-            <div class="tb-info">
+            <div class="tb-info" onclick="openRoleModal()" style="cursor: pointer;">
                 <div class="tb-name" id="them-name-display">Ta <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
                 <div class="tb-status" id="them-status-emoji"></div>
             </div>
@@ -1230,7 +1248,7 @@ body.dark-mode .mail-card { background: repeating-linear-gradient(0deg, #1a1a1a,
         
         <div class="modal-body" style="padding: 0;">
             <!-- Tab 1: 主题商店 -->
-            <div class="tab-pane active" id="tab-theme-store" style="padding: 16px; gap: 16px; display: flex;">
+            <div class="tab-pane active" id="tab-theme-store" style="padding: 16px; gap: 16px;">
                 
                 <!-- 实时预览区 -->
                 <style id="theme-preview-style"></style>
@@ -1277,6 +1295,32 @@ body.dark-mode .mail-card { background: repeating-linear-gradient(0deg, #1a1a1a,
                             <option value="layout-terminal">终端指令 (纯文字网格)</option>
                             <option value="layout-polaroid">日系拍立得 (倾斜相纸)</option>
                             <option value="layout-folder">档案标签 (边缘文件夹)</option>
+                        </select>
+                    </div>
+                </div>
+                                <div class="card-group">
+                    <div class="setting-label">聊天区显示控制</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;">
+                        <span style="font-size: 13px; color: var(--text-main); font-weight: 300;">隐藏气泡头像</span>
+                        <label class="toggle-switch"><input type="checkbox" id="set-hide-avatar" onchange="updateSettings()"><span class="toggle-slider"></span></label>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;">
+                        <span style="font-size: 13px; color: var(--text-main); font-weight: 300;">隐藏气泡时间戳</span>
+                        <label class="toggle-switch"><input type="checkbox" id="set-hide-time" onchange="updateSettings()"><span class="toggle-slider"></span></label>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;">
+                        <span style="font-size: 13px; color: var(--text-main); font-weight: 300;">隐藏已读状态</span>
+                        <label class="toggle-switch"><input type="checkbox" id="set-hide-read" onchange="updateSettings()"><span class="toggle-slider"></span></label>
+                    </div>
+                </div>
+
+                <div class="card-group">
+                    <div class="setting-label">时间戳样式与位置</div>
+                    <div class="group-select-row" style="margin-bottom: 8px;">
+                        <select id="set-time-style" onchange="updateSettings()">
+                            <option value="time-default">默认 (内部底部)</option>
+                            <option value="time-outside">气泡外侧底部</option>
+                            <option value="time-top">气泡外侧顶部</option>
                         </select>
                     </div>
                 </div>
@@ -1833,6 +1877,19 @@ document.getElementById('set-min-delay').value = appState.settings.minDelaySec |
 document.getElementById('set-auto-call').checked = !!appState.settings.allowAutoCall;
 document.getElementById('set-custom-emojis').value = appState.settings.customEmojis || "";
 
+const chkAvatar = document.getElementById('set-hide-avatar'); if(chkAvatar) chkAvatar.checked = !!appState.settings.hideAvatar;
+const chkTime = document.getElementById('set-hide-time'); if(chkTime) chkTime.checked = !!appState.settings.hideTime;
+const chkRead = document.getElementById('set-hide-read'); if(chkRead) chkRead.checked = !!appState.settings.hideRead;
+const selTimeStyle = document.getElementById('set-time-style'); if(selTimeStyle) selTimeStyle.value = appState.settings.timeStyle || 'time-default';
+
+document.body.classList.toggle('hide-avatar', !!appState.settings.hideAvatar);
+document.body.classList.toggle('hide-time', !!appState.settings.hideTime);
+document.body.classList.toggle('hide-read', !!appState.settings.hideRead);
+
+document.body.classList.remove('time-style-outside', 'time-style-top');
+if(appState.settings.timeStyle === 'time-outside') document.body.classList.add('time-style-outside');
+if(appState.settings.timeStyle === 'time-top') document.body.classList.add('time-style-top');
+
    rebuildThemeCSS(); renderBubblePresets(); renderCustomCSSPresets();
 
     if(appState.settings.meAvatar) document.getElementById('me-avatar').src = appState.settings.meAvatar;
@@ -1852,6 +1909,10 @@ function updateSettings() {
 appState.settings.minDelaySec = Number(document.getElementById('set-min-delay').value); appState.settings.maxDelaySec = Number(document.getElementById('set-max-delay').value); appState.settings.maxReplyCount = Number(document.getElementById('set-max-reply').value);
     appState.settings.customCSS = document.getElementById('set-custom-css').value; appState.settings.bubbleCSS = document.getElementById('set-bubble-css').value;
     appState.settings.disableAnimations = document.getElementById('set-disable-anim').checked;
+        appState.settings.hideAvatar = document.getElementById('set-hide-avatar').checked;
+    appState.settings.hideTime = document.getElementById('set-hide-time').checked;
+    appState.settings.hideRead = document.getElementById('set-hide-read').checked;
+    appState.settings.timeStyle = document.getElementById('set-time-style').value;
         const layoutSelect = document.getElementById('set-topbar-layout');
     if(layoutSelect) appState.settings.topbarLayout = layoutSelect.value;
     
@@ -4662,6 +4723,19 @@ body.dark-mode .them .bubble { background: #2c2c2c !important; color: #e0e0e0 !i
 body.dark-mode .me .bubble { background: #2b7d42 !important; color: #e0e0e0 !important; }
 body.dark-mode .them .bubble::before { border-right-color: #2c2c2c !important; }
 body.dark-mode .me .bubble::before { border-left-color: #2b7d42 !important; }
+/* --- 微信弹窗全局 UI --- */
+.modal-content { border-radius: 8px !important; border: none !important; box-shadow: 0 4px 24px rgba(0,0,0,0.1) !important; background: #ededed !important; }
+.modal-header, .tab-nav { background: #ededed !important; border-bottom: none !important; }
+.modal-body { background: #fff !important; }
+.btn-full, .game-icon-btn, .diary-card, .mail-card, .tarot-share-card, .decision-box, .close-btn, .music-player-box { border-radius: 4px !important; border: none !important; box-shadow: none !important; background: #f2f2f2 !important; color: #333 !important; }
+.btn-full.primary { background: #07c160 !important; color: #fff !important; font-weight: 500 !important; }
+.input-item input[type="text"], .textarea-box, select { border-radius: 4px !important; border: none !important; background: #f2f2f2 !important; }
+.tab-btn.active { background: transparent !important; color: #07c160 !important; border-bottom: 2px solid #07c160 !important; font-weight: bold !important; }
+body.dark-mode .modal-content { background: #111 !important; }
+body.dark-mode .modal-header, body.dark-mode .tab-nav { background: #111 !important; }
+body.dark-mode .modal-body { background: #1e1e1e !important; }
+body.dark-mode .btn-full:not(.primary), body.dark-mode .game-icon-btn, body.dark-mode .diary-card, body.dark-mode .mail-card { background: #2c2c2c !important; color: #ccc !important; }
+
 
 /* 智能时间戳与输入中气泡 */
 .bubble-time, .read-status { color: inherit !important; opacity: 0.5 !important; }
@@ -4681,7 +4755,8 @@ body.dark-mode .top-bar { background: #1a1a1a !important; border-bottom: 1px sol
 .bottom-bar { background: #f7f7f7 !important; border-top: 1px solid #d9d9d9 !important; padding: 10px 12px !important; }
 body.dark-mode .bottom-bar { background: #1a1a1a !important; border-top: 1px solid #000 !important; }
 .input-row { display: flex !important; align-items: center !important; }
-.bottom-bar .icon-btn { border: none !important; box-shadow: none !important; background: transparent !important; }
+.bottom-bar .icon-btn { border: none !important; box-shadow: none !important; background: transparent !important; color: var(--text-main) !important; }
+.bottom-bar .icon-btn.active { color: #07c160 !important; }
 #stack-toggle-btn { order: 1; margin-right: 6px; }
 #msg-input { order: 2; flex: 1; background: #fff !important; border: none !important; border-radius: 4px !important; min-height: 38px !important; padding: 8px 12px !important;}
 body.dark-mode #msg-input { background: #2c2c2c !important; color:#e0e0e0 !important;}
@@ -4701,6 +4776,16 @@ body.dark-mode .chat-area { background: #121212 !important; }
 .me .bubble { background: #0099ff !important; color: #fff !important; border-radius: 16px 0 16px 16px !important; }
 body.dark-mode .them .bubble { background: #1a1a1a !important; color: #e0e0e0 !important; }
 body.dark-mode .me .bubble { background: #005c99 !important; color: #e0e0e0 !important; }
+/* --- QQ 弹窗全局 UI --- */
+.modal-content { border-radius: 16px !important; border: none !important; box-shadow: 0 4px 20px rgba(0,0,0,0.08) !important; background: #f5f6fa !important; }
+.modal-header, .tab-nav { background: #fff !important; border-bottom: none !important; }
+.btn-full, .game-icon-btn, .diary-card, .mail-card, .tarot-share-card, .decision-box, .close-btn, .music-player-box { border-radius: 20px !important; border: none !important; box-shadow: 0 2px 8px rgba(0,0,0,0.03) !important; background: #fff !important; }
+.btn-full.primary { background: #0099ff !important; color: #fff !important; }
+.input-item input[type="text"], .textarea-box, select { border-radius: 12px !important; border: none !important; background: #fff !important; box-shadow: inset 0 1px 3px rgba(0,0,0,0.03) !important; }
+.tab-btn.active { background: transparent !important; color: #0099ff !important; border-bottom: 3px solid #0099ff !important; font-weight: bold !important; }
+body.dark-mode .modal-content { background: #121212 !important; }
+body.dark-mode .modal-header, body.dark-mode .tab-nav { background: #1a1a1a !important; }
+
 /* 智能时间戳与输入中气泡 */
 .bubble-time, .read-status { color: inherit !important; opacity: 0.7 !important; }
 .typing-status-bubble { background: #ffffff !important; color: #000 !important; border: none !important; box-shadow: none !important; border-radius: 16px !important; border-top-left-radius: 0 !important; }
@@ -4737,6 +4822,16 @@ body.dark-mode .chat-area { background: #000000 !important; }
 .me .bubble { background: #007aff !important; color: #fff !important; border-bottom-right-radius: 4px !important; }
 body.dark-mode .them .bubble { background: #2c2c2e !important; color: #fff !important;}
 body.dark-mode .me .bubble { background: #0b84ff !important; color: #fff !important;}
+/* --- iMessage 弹窗全局 UI --- */
+.modal-content { border-radius: 20px !important; border: none !important; box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important; background: rgba(255,255,255,0.85) !important; backdrop-filter: blur(15px) !important; }
+.modal-header, .tab-nav { background: transparent !important; border-bottom: 1px solid rgba(0,0,0,0.05) !important; }
+.btn-full, .game-icon-btn, .diary-card, .mail-card, .tarot-share-card, .decision-box, .close-btn, .music-player-box { border-radius: 12px !important; border: none !important; box-shadow: none !important; background: rgba(0,0,0,0.04) !important; }
+.btn-full.primary { background: #007aff !important; color: #fff !important; font-weight: bold !important; }
+.input-item input[type="text"], .textarea-box, select { border-radius: 10px !important; border: 1px solid rgba(0,0,0,0.1) !important; background: rgba(255,255,255,0.5) !important; }
+.tab-btn { border-right: none !important; }
+.tab-btn.active { background: #007aff !important; color: #fff !important; border-radius: 8px !important; margin: 4px !important; }
+body.dark-mode .modal-content { background: rgba(30,30,30,0.85) !important; }
+
 /* 智能时间戳与输入中气泡 */
 .bubble-time, .read-status { color: inherit !important; opacity: 0.6 !important; }
 .typing-status-bubble { background: #e9e9eb !important; color: #000 !important; border: none !important; box-shadow: none !important; border-radius: 18px !important; border-bottom-left-radius: 4px !important; }
@@ -4872,6 +4967,18 @@ body.dark-mode #msg-input { background: #3a3b3c !important; color: #e4e6eb !impo
 .message-wrap { margin-bottom: 8px !important; }
 .them .bubble { background: transparent !important; color: #dbdee1 !important; }
 .me .bubble { background: transparent !important; color: #dbdee1 !important; }
+/* --- Discord 弹窗全局 UI --- */
+.modal-content { border-radius: 8px !important; border: none !important; box-shadow: 0 8px 24px rgba(0,0,0,0.3) !important; background: #313338 !important; color: #dbdee1 !important; }
+.modal-header { background: #313338 !important; border-bottom: 1px solid #1e1f22 !important; }
+.modal-header h3 { color: #fff !important; font-weight: bold !important; }
+.tab-nav { background: #2b2d31 !important; border-bottom: none !important; }
+.btn-full, .game-icon-btn, .diary-card, .mail-card, .tarot-share-card, .decision-box, .close-btn, .music-player-box { border-radius: 4px !important; border: none !important; box-shadow: none !important; background: #2b2d31 !important; color: #dbdee1 !important; }
+.btn-full.primary { background: #5865F2 !important; color: #fff !important; }
+.input-item input[type="text"], .textarea-box, select { border-radius: 4px !important; border: none !important; background: #1e1f22 !important; color: #dbdee1 !important; padding: 8px !important; }
+.tab-btn { border-right: none !important; color: #80848e !important; }
+.tab-btn.active { background: #4e5058 !important; color: #fff !important; border-radius: 4px !important; margin: 4px !important; }
+.setting-label { color: #b5bac1 !important; border-bottom: none !important; font-weight: bold !important; }
+
 /* 智能时间戳与输入中气泡 */
 .bubble-time, .read-status { color: inherit !important; opacity: 0.5 !important; }
 .typing-status-bubble { background: transparent !important; color: #dbdee1 !important; border: none !important; box-shadow: none !important; border-radius: 8px !important; padding: 4px 0 !important;}
@@ -4940,6 +5047,17 @@ body.dark-mode #msg-input { background: #222 !important; color: #e0e0e0 !importa
 .date-divider { color: #888 !important; }
 .them .bubble { background: #262626 !important; color: #fff !important; }
 .me .bubble { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%) !important; color: #fff !important; }
+/* --- IG 弹窗全局 UI --- */
+.modal-content { border-radius: 20px !important; border: 1px solid #262626 !important; box-shadow: none !important; background: #000 !important; color: #fff !important; }
+.modal-header, .tab-nav { background: #000 !important; border-bottom: 1px solid #262626 !important; }
+.modal-header h3 { color: #fff !important; }
+.btn-full, .game-icon-btn, .diary-card, .mail-card, .tarot-share-card, .decision-box, .close-btn, .music-player-box { border-radius: 8px !important; border: 1px solid #262626 !important; box-shadow: none !important; background: transparent !important; color: #fff !important; }
+.btn-full.primary { background: linear-gradient(45deg, #f09433, #dc2743) !important; border: none !important; }
+.input-item input[type="text"], .textarea-box, select { border-radius: 8px !important; border: 1px solid #262626 !important; background: transparent !important; color: #fff !important; }
+.tab-btn { border-right: none !important; color: #888 !important; }
+.tab-btn.active { background: transparent !important; color: #fff !important; border-bottom: 2px solid #fff !important; }
+.setting-label { border-color: #262626 !important; }
+
 /* 智能时间戳与输入中气泡 */
 .bubble-time, .read-status { color: inherit !important; opacity: 0.7 !important; }
 .typing-status-bubble { background: #262626 !important; color: #fff !important; border: none !important; box-shadow: none !important; border-radius: 20px !important; }
@@ -5076,7 +5194,7 @@ body.dark-mode .bottom-bar { background: #111 !important; }
         `
     }
         ,{
-        id: 'telegram', name: 'Telegram', desc: '日间经典蓝白绿，专属纸飞机发送键',
+        id: 'telegram_day', name: 'Telegram', desc: '日间经典蓝白绿，专属纸飞机发送键',
         layout: 'layout-modern', bg: '#b5cce4', radius: 50,
         bubbleCSS: 'border: none !important; box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important; padding: 8px 12px !important;',
         customCSS: `
