@@ -4023,13 +4023,13 @@ async function addMusic() {
     
     let id = "";
     // 获取用户选择的类型（单曲还是歌单）
-let typeEl = document.getElementById('music-type');
-let type = typeEl ? typeEl.value : "song"; 
+    let typeEl = document.getElementById('music-type');
+    let type = typeEl ? typeEl.value : "song"; 
 
-// 保留自动识别机制：如果粘贴的链接里带有 playlist，依然自动切成歌单
-if (val.includes('playlist')) {
-    type = "playlist";
-}
+    // 保留自动识别机制：如果粘贴的链接里带有 playlist，依然自动切成歌单
+    if (val.includes('playlist')) {
+        type = "playlist";
+    }
     
     // 用正则提取 id (支持纯数字，或者链接中的 id=xxxx)
     const idMatch = val.match(/id=(\d+)/);
@@ -4057,33 +4057,50 @@ if (val.includes('playlist')) {
     inputEl.value = "正在从云端拉取，请稍候...";
     inputEl.disabled = true;
     
+    let data = null;
+
     try {
-        // 调用 Meting API 获取网易云的歌曲信息
-        const res = await fetch(`https://api.injahow.cn/meting/?server=netease&type=${type}&id=${id}`);
-        const data = await res.json();
-        
-        if (data && data.length > 0) {
-            data.forEach(song => {
-                appState.musicList.push({
-                    id: Date.now() + Math.random(),
-                    title: song.name || "未知歌曲",
-                    singer: song.artist || "未知歌手",
-                    cover: song.pic || "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
-                    url: song.url || `https://music.163.com/song/media/outer/url?id=${song.id || id}.mp3`
-                });
-            });
-            showToast(`✅ 成功添加 ${data.length} 首歌曲`);
-        } else {
-            // 如果接口没查到，降级回手动拼接
-            if (type === 'song') {
-                appState.musicList.push({ id: Date.now(), title: "网易云单曲 ID: " + id, singer: "-", cover: "", url: `https://music.163.com/song/media/outer/url?id=${id}.mp3` });
-                showToast("✅ 已添加，但未获取到详细信息");
-            } else {
-                showToast("❌ 歌单解析失败，可能是隐私歌单或接口波动");
-            }
+        // 尝试主 API (i-meto 相对稳定)
+        const res = await fetch(`https://api.i-meto.com/meting/api?server=netease&type=${type}&id=${id}`);
+        if(res.ok) data = await res.json();
+    } catch (e1) {
+        try {
+            // 如果主 API 挂了，尝试备用 API (原 injahow)
+            const res2 = await fetch(`https://api.injahow.cn/meting/?server=netease&type=${type}&id=${id}`);
+            if(res2.ok) data = await res2.json();
+        } catch (e2) {
+            console.warn("所有解析API均请求失败");
         }
-    } catch (error) {
-        showToast("❌ 网络请求失败，请稍后再试");
+    }
+    
+    // 如果获取到了数据并成功解析
+    if (data && data.length > 0) {
+        data.forEach(song => {
+            appState.musicList.push({
+                id: Date.now() + Math.random(),
+                title: song.name || "未知歌曲",
+                singer: song.artist || "未知歌手",
+                cover: song.pic || "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+                url: song.url || `https://music.163.com/song/media/outer/url?id=${song.id || id}.mp3`
+            });
+        });
+        showToast(`✅ 成功添加 ${data.length} 首歌曲`);
+    } else {
+        // 如果所有接口都没查到 (或者网络彻底连不通API)，执行降级策略
+        if (type === 'song') {
+            // 单曲：即使没获取到封面和歌名，直接用网易云的外链强行拼接依然可以播放
+            appState.musicList.push({ 
+                id: Date.now(), 
+                title: "网易云单曲 ID: " + id, 
+                singer: "-", 
+                cover: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7", 
+                url: `https://music.163.com/song/media/outer/url?id=${id}.mp3` 
+            });
+            showToast("✅ 已添加，但未获取到封面和歌名");
+        } else {
+            // 歌单：无法靠拼接得知里面有哪些歌，只能放弃
+            showToast("❌ 歌单解析失败，可能是隐私歌单或接口失效");
+        }
     }
     
     finishAddMusic(inputEl);
