@@ -1582,7 +1582,7 @@ function showDialog(type, title, desc, placeholder = '') {
     return new Promise((resolve) => {
         dialogResolve = resolve; dialogType = type;
         document.getElementById('ui-dialog-title').innerText = title;
-        document.getElementById('ui-dialog-desc').innerText = desc || '';
+        document.getElementById('ui-dialog-desc').innerHTML = desc || '';
         document.getElementById('ui-dialog-desc').style.display = desc ? 'block' : 'none';
         
         const inputWrap = document.getElementById('ui-dialog-input-wrap');
@@ -2596,7 +2596,23 @@ function triggerAutoReply() {
     const minMs = (appState.settings.minDelaySec || 2) * 1000; 
     const maxMs = (appState.settings.maxDelaySec || 6) * 1000;
         let maxCount = appState.settings.maxReplyCount || 1; 
-        let count = Math.floor(Math.random() * maxCount) + 1;
+let count = 1;
+if (maxCount > 1) {
+    let weights = [];
+    // 分配权重：只比基础概率稍微高一点点，缓慢递减
+    for (let i = 1; i <= maxCount; i++) {
+        if (i === 1) weights.push(18);       // 1条最高
+        else if (i === 2) weights.push(15);  // 2条稍微递减
+        else if (i === 3) weights.push(12);  // 3条再递减一点
+        else weights.push(10);               // 4条及以上的保底基础概率
+    }
+    let totalW = weights.reduce((a, b) => a + b, 0);
+    let r = Math.random() * totalW;
+    for (let i = 0; i < maxCount; i++) {
+        if (r < weights[i]) { count = i + 1; break; }
+        r -= weights[i];
+    }
+}
         let baseDelay = Math.max(minMs, Math.random() * (maxMs - minMs) + minMs);
         
         pendingRepliesCount += count; 
@@ -5512,36 +5528,48 @@ function renderThemeStore() {
 // 将选中配置的 CSS 作用在预览框上
 function previewTheme(config) {
     const previewBox = document.getElementById('theme-preview-box');
-    
-    // 如果是切换全局主题，顺便预览顶栏排版
-    if(storeMode === 'theme') {
-        previewBox.className = config.layout;
-    }
-
     let styleStr = '';
-    // 气泡
-    if (config.bubbleCSS) styleStr += `#theme-preview-box .bubble { ${config.bubbleCSS} } `;
-    // 头像圆角 (仅在全局主题有)
-    if (config.radius !== undefined) styleStr += `#theme-preview-box img { border-radius: ${config.radius}% !important; } `;
-    // 壁纸 (仅在全局主题有)
-    if (config.bg) {
-        const bgVal = (config.bg.startsWith('#') || config.bg.startsWith('linear')) ? config.bg : `url('${config.bg}') center/cover`;
-        styleStr += `#theme-preview-box .preview-chat { background: ${bgVal} !important; } `;
+    
+    if (storeMode === 'theme') {
+        previewBox.className = config.layout;
+        if (config.bubbleCSS) styleStr += `#theme-preview-box .bubble { ${config.bubbleCSS} } `;
+        if (config.radius !== undefined) styleStr += `#theme-preview-box img { border-radius: ${config.radius}% !important; } `;
+        if (config.bg) {
+            const bgVal = (config.bg.startsWith('#') || config.bg.startsWith('linear')) ? config.bg : `url('${config.bg}') center/cover`;
+            styleStr += `#theme-preview-box .preview-chat { background: ${bgVal} !important; } `;
+        }
+        if (config.customCSS) {
+            const scopedCss = config.customCSS.replace(/(^|\})\s*([^{]+)\s*\{/g, (match, p1, p2) => {
+                const selectors = p2.split(',').map(s => `#theme-preview-box ${s.trim()}`).join(', ');
+                return `${p1} ${selectors} {`;
+            });
+            styleStr += scopedCss;
+        }
+    } else {
+        // 【新增混搭预览】气泡模式下，用你当前选中的全局主题当“底座”
+        const theme = THEME_PRESETS.find(t => t.id === selectedThemeId) || THEME_PRESETS[0];
+        previewBox.className = theme.layout;
+        
+        if (config.bubbleCSS) styleStr += `#theme-preview-box .bubble { ${config.bubbleCSS} } `;
+        if (theme.radius !== undefined) styleStr += `#theme-preview-box img { border-radius: ${theme.radius}% !important; } `;
+        if (theme.bg) {
+            const bgVal = (theme.bg.startsWith('#') || theme.bg.startsWith('linear')) ? theme.bg : `url('${theme.bg}') center/cover`;
+            styleStr += `#theme-preview-box .preview-chat { background: ${bgVal} !important; } `;
+        }
+        // 拼接 主题的CSS + 气泡的CSS (气泡在后，优先级更高，会完美覆盖颜色)
+        const mixedCSS = (theme.customCSS || '') + "\n" + (config.customCSS || '');
+        if (mixedCSS) {
+            const scopedCss = mixedCSS.replace(/(^|\})\s*([^{]+)\s*\{/g, (match, p1, p2) => {
+                const selectors = p2.split(',').map(s => `#theme-preview-box ${s.trim()}`).join(', ');
+                return `${p1} ${selectors} {`;
+            });
+            styleStr += scopedCss;
+        }
     }
-
-    // 智能解析 CustomCSS，将所有选择器限定在 #theme-preview-box 内
-    if (config.customCSS) {
-        const scopedCss = config.customCSS.replace(/(^|\})\s*([^{]+)\s*\{/g, (match, p1, p2) => {
-            const selectors = p2.split(',').map(s => `#theme-preview-box ${s.trim()}`).join(', ');
-            return `${p1} ${selectors} {`;
-        });
-        styleStr += scopedCss;
-    }
-
     document.getElementById('theme-preview-style').innerHTML = styleStr;
 }
 
-// 确认应用配置（覆盖至 appState）
+// 确认应用配置
 function applySelectedTheme() {
     if (storeMode === 'theme') {
         const theme = THEME_PRESETS.find(t => t.id === selectedThemeId);
@@ -5552,18 +5580,20 @@ function applySelectedTheme() {
         
         const radiusSlider = document.getElementById('set-avatar-radius');
         if(radiusSlider) { radiusSlider.value = theme.radius; updateRadiusRealtime(); }
-        // appState.settings.chatWallpaper = theme.bg;
         showToast(`✅ 已应用主题：${theme.name}`);
     } else {
         const bubble = BUBBLE_PRESETS.find(b => b.id === selectedBubbleId);
         if (!bubble) return;
-        // 仅仅替换气泡代码和气泡拓展的定制颜色代码，保留布局和壁纸
-        document.getElementById('set-bubble-css').value = bubble.bubbleCSS;
-        document.getElementById('set-custom-css').value = bubble.customCSS;
-        showToast(`✅ 已应用独立气泡：${bubble.name}`);
-    }
+        
+        // 【新增混搭应用】获取当前选中的底座主题
+        const theme = THEME_PRESETS.find(t => t.id === selectedThemeId) || THEME_PRESETS[0];
 
-    // 保存并刷新
+        // 保留主题的布局和底色，把气泡的专属代码拼接到下面
+        document.getElementById('set-bubble-css').value = bubble.bubbleCSS;
+        document.getElementById('set-custom-css').value = theme.customCSS + "\n/* --- 以下是混搭的气泡专属CSS --- */\n" + bubble.customCSS;
+        
+        showToast(`✅ 已混搭：${theme.name} + ${bubble.name}`);
+    }
     updateSettings();
 }
 
