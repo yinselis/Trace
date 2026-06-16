@@ -320,6 +320,23 @@ body.dark-mode .mail-card { background: repeating-linear-gradient(0deg, #1a1a1a,
 #tab-theme-store { overflow: hidden !important; }
 #theme-store-list { overflow-y: auto !important; padding-right: 4px; }
 
+/* 心愿单专属样式 */
+.wish-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; border: 1px solid var(--line-color); background: #fff; box-shadow: 2px 2px 0 var(--line-light); transition: all 0.3s; }
+.wish-item.done { opacity: 0.6; background: #fafafa; box-shadow: none; }
+.wish-item.done .wish-text { text-decoration: line-through; color: var(--text-sub); }
+.wish-text { flex: 1; font-size: 14px; font-weight: bold; color: var(--text-main); margin-left: 10px; }
+body.dark-mode .wish-item { background: #1a1a1a; }
+body.dark-mode .wish-item.done { background: #111; }
+
+/* 拍立得照片专属样式 */
+.polaroid-card { width: 45%; background: #fff; padding: 6px 6px 16px 6px; border: 1px solid var(--line-color); box-shadow: 3px 3px 0 rgba(0,0,0,0.1); transition: transform 0.2s; position: relative; }
+.polaroid-card:nth-child(even) { transform: rotate(2deg); }
+.polaroid-card:nth-child(odd) { transform: rotate(-2deg); }
+.polaroid-img { width: 100%; aspect-ratio: 1; object-fit: cover; border: 1px solid var(--line-light); background: #fafafa; }
+.polaroid-caption { font-size: 11px; text-align: center; margin-top: 8px; color: var(--text-main); font-weight: bold; }
+
+body.dark-mode .polaroid-caption { color: #111; }
+
         </style>
         
         
@@ -1120,6 +1137,41 @@ body.time-style-top .message-wrap { margin-top: 18px !important; }
         </div>
     </div>
     
+    <!-- 心愿打卡单面板 -->
+<div class="modal-overlay" id="wish-modal">
+    <div class="modal-content" style="height: 85vh;">
+        <div class="modal-header">
+            <h3>我们的心愿单</h3>
+            <button class="close-btn" onclick="closeWishModal()">收起</button>
+        </div>
+        <div class="modal-body" style="padding: 16px;">
+            <div style="font-size: 11px; color: var(--text-sub); margin-bottom: 12px;">写下想和 Ta 一起做的事，完成时打个勾吧~</div>
+<div class="input-item" style="flex-direction: row; gap: 8px; margin-bottom: 20px; align-items: center;">
+    <input type="text" id="wish-input" placeholder="例如：一起看初雪..." style="flex: 1; height: 38px; border: 1px solid var(--line-color); padding: 0 12px; margin: 0; border-radius: 0;">
+    <button class="btn-noshadow icon-btn" style="height: 38px; border: 1px solid var(--line-color); padding: 0 16px; margin: 0; border-radius: 0;" onclick="addWish()">许愿</button>
+</div>
+            <div id="wish-list-area" style="display: flex; flex-direction: column; gap: 10px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 拍立得照片墙面板 -->
+<div class="modal-overlay" id="photo-modal">
+    <div class="modal-content" style="height: 90vh; background: var(--bg);">
+        <div class="modal-header">
+            <h3>回忆相册</h3>
+            <div style="display: flex; gap: 8px;">
+                <button class="close-btn" onclick="document.getElementById('photo-upload').click()">+ 上传</button>
+                <input type="file" id="photo-upload" accept="image/*" onchange="uploadPhoto(event)" style="display:none;">
+                <button class="close-btn" onclick="closePhotoModal()">收起</button>
+            </div>
+        </div>
+        <div class="modal-body" style="padding: 20px; overflow-y: auto;">
+            <div id="photo-wall-area" style="display: flex; flex-wrap: wrap; gap: 16px; justify-content: center;"></div>
+        </div>
+    </div>
+</div>
+
     <div class="modal-overlay" id="game-modal">
     <div class="modal-content" style="height: 85vh;">
     <div class="modal-header">
@@ -1134,6 +1186,14 @@ body.time-style-top .message-wrap { margin-top: 18px !important; }
 <div class="game-icon-btn" onclick="openAnniversaryModal()" ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><rect x="8" y="14" width="2" height="2"></rect></svg><span>纪念日</span></div>
     <div class="game-icon-btn" onclick="openFocusModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg><span>陪伴专注</span></div>
     <div class="game-icon-btn" onclick="openGachaModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="8" width="18" height="14" rx="2"></rect><path d="M12 5a3 3 0 1 0-3 3"></path><path d="M12 5a3 3 0 1 1 3 3"></path><line x1="12" y1="12" x2="12" y2="22"></line><line x1="3" y1="12" x2="21" y2="12"></line></svg><span>话题扭蛋</span></div>
+    <div class="game-icon-btn" onclick="openPhotoModal()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+    <span>照片墙</span>
+</div>
+<div class="game-icon-btn" onclick="openWishModal()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+    <span>心愿单</span>
+</div>
     </div><div style="text-align: center; color: var(--text-sub); opacity: 0.6; margin-top: 30px;"><p style="font-size: 11px; margin-top: 6px; letter-spacing: 1px;">更多功能模块等待加载中...</p></div></div></div></div>
 
     <!-- 占卜模块面板 -->
@@ -5546,7 +5606,6 @@ function previewTheme(config) {
             styleStr += scopedCss;
         }
     } else {
-        // 【新增混搭预览】气泡模式下，用你当前选中的全局主题当“底座”
         const theme = THEME_PRESETS.find(t => t.id === selectedThemeId) || THEME_PRESETS[0];
         previewBox.className = theme.layout;
         
@@ -5556,8 +5615,12 @@ function previewTheme(config) {
             const bgVal = (theme.bg.startsWith('#') || theme.bg.startsWith('linear')) ? theme.bg : `url('${theme.bg}') center/cover`;
             styleStr += `#theme-preview-box .preview-chat { background: ${bgVal} !important; } `;
         }
-        // 拼接 主题的CSS + 气泡的CSS (气泡在后，优先级更高，会完美覆盖颜色)
-        const mixedCSS = (theme.customCSS || '') + "\n" + (config.customCSS || '');
+        
+        // 【新增斩断尾巴指令】如果气泡不是漫画风和折纸风（这俩自带尾巴），就强制清除底座的小尾巴
+        let resetTail = "\n.them .bubble::before, .me .bubble::before, .them .bubble::after, .me .bubble::after { display: none !important; }\n";
+        if (config.id === 'b_comic' || config.id === 'b_origami') resetTail = "";
+        
+        const mixedCSS = (theme.customCSS || '') + resetTail + (config.customCSS || '');
         if (mixedCSS) {
             const scopedCss = mixedCSS.replace(/(^|\})\s*([^{]+)\s*\{/g, (match, p1, p2) => {
                 const selectors = p2.split(',').map(s => `#theme-preview-box ${s.trim()}`).join(', ');
@@ -5584,13 +5647,14 @@ function applySelectedTheme() {
     } else {
         const bubble = BUBBLE_PRESETS.find(b => b.id === selectedBubbleId);
         if (!bubble) return;
-        
-        // 【新增混搭应用】获取当前选中的底座主题
         const theme = THEME_PRESETS.find(t => t.id === selectedThemeId) || THEME_PRESETS[0];
 
-        // 保留主题的布局和底色，把气泡的专属代码拼接到下面
+        // 【新增斩断尾巴指令】
+        let resetTail = "\n/* --- 消除底座多余的小尾巴 --- */\n.them .bubble::before, .me .bubble::before, .them .bubble::after, .me .bubble::after { display: none !important; }\n";
+        if (bubble.id === 'b_comic' || bubble.id === 'b_origami') resetTail = "";
+
         document.getElementById('set-bubble-css').value = bubble.bubbleCSS;
-        document.getElementById('set-custom-css').value = theme.customCSS + "\n/* --- 以下是混搭的气泡专属CSS --- */\n" + bubble.customCSS;
+        document.getElementById('set-custom-css').value = theme.customCSS + resetTail + bubble.customCSS;
         
         showToast(`✅ 已混搭：${theme.name} + ${bubble.name}`);
     }
@@ -5656,6 +5720,121 @@ async function executeEmergencyRescue() {
     
     // 5. 弹窗提示
     alert("🚑 紧急救援已触发！\n所有魔改样式已强制清除，门已经撬开了！");
+}
+
+/* ================= 心愿单逻辑 ================= */
+function openWishModal() {
+    closeGameModal();
+    if(!appState.wishes) appState.wishes = [];
+    document.getElementById('wish-modal').classList.add('open');
+    renderWishes();
+}
+function closeWishModal() { document.getElementById('wish-modal').classList.remove('open'); }
+
+function addWish() {
+    const input = document.getElementById('wish-input');
+    const text = input.value.trim();
+    if(!text) return;
+    appState.wishes.unshift({ id: Date.now(), text: text, done: false });
+    saveState(); input.value = ''; renderWishes();
+}
+
+function toggleWish(id) {
+    const wish = appState.wishes.find(w => w.id === id);
+    if(wish) {
+        wish.done = !wish.done;
+        saveState(); renderWishes();
+        // 自动发消息的代码已经全部砍掉了！
+    }
+}
+
+// 新增的：把心愿转发到聊天界面的功能
+function shareWish(id) {
+    const wish = appState.wishes.find(w => w.id === id);
+    if(!wish) return;
+    const html = `<div class="tarot-share-card" style="width: 220px;">
+        <div class="tarot-share-header" style="background:#555;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+            <span>心愿单分享</span>
+        </div>
+        <div class="tarot-share-content" style="padding: 16px 12px; font-size: 13px; font-weight: bold; color: var(--text-main); line-height: 1.5;">
+            ${wish.text}
+        </div>
+    </div>`;
+    addMessage({ id: Date.now(), text: html, type: 'tarot', sender: 'me', time: Date.now(), quoteText: null, isRead: false });
+    closeWishModal();
+}
+
+function deleteWish(id) {
+    uiConfirm("确定要删除这个心愿吗？").then(res => {
+        if(res) { appState.wishes = appState.wishes.filter(w => w.id !== id); saveState(); renderWishes(); }
+    });
+}
+
+function renderWishes() {
+    const area = document.getElementById('wish-list-area');
+    area.innerHTML = '';
+    if(appState.wishes.length === 0) {
+        area.innerHTML = '<div style="text-align:center; color:var(--text-sub); font-size:12px; margin-top:20px;">还没写下心愿哦</div>'; return;
+    }
+    appState.wishes.forEach(w => {
+        const item = document.createElement('div');
+        item.className = `wish-item ${w.done ? 'done' : ''}`;
+        item.innerHTML = `
+    <input type="checkbox" class="card-checkbox" ${w.done ? 'checked' : ''} onclick="toggleWish(${w.id})">
+    <div class="wish-text">${w.text}</div>
+    
+    <div style="display:flex; gap:4px;">
+        <button class="btn-noshadow icon-btn" style="border:none; color:var(--text-sub); padding:4px;" onclick="shareWish(${w.id})" title="转发到对话">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+        </button>
+        <button class="btn-noshadow icon-btn" style="border:none; color:#d32f2f; padding:4px;" onclick="deleteWish(${w.id})">✕</button>
+    </div>
+`;
+        area.appendChild(item);
+    });
+}
+
+/* ================= 照片墙逻辑 ================= */
+function openPhotoModal() {
+    closeGameModal();
+    if(!appState.photos) appState.photos = [];
+    document.getElementById('photo-modal').classList.add('open');
+    renderPhotoWall();
+}
+function closePhotoModal() { document.getElementById('photo-modal').classList.remove('open'); }
+
+async function uploadPhoto(e) {
+    if(e.target.files[0]) {
+        const b64 = await compressImage(e.target.files[0], 600);
+        const caption = await uiPrompt("给这张照片写一句留言吧：", "相册留言", "例如：今天天气真好");
+        appState.photos.unshift({ id: Date.now(), img: b64, text: caption || '...' });
+        saveState(); renderPhotoWall();
+    }
+    e.target.value = '';
+}
+
+function deletePhoto(id) {
+    uiConfirm("确定要把这张照片从墙上撕下来吗？").then(res => {
+        if(res) { appState.photos = appState.photos.filter(p => p.id !== id); saveState(); renderPhotoWall(); }
+    });
+}
+
+function renderPhotoWall() {
+    const area = document.getElementById('photo-wall-area');
+    area.innerHTML = '';
+    if(appState.photos.length === 0) {
+        area.innerHTML = '<div style="text-align:center; color:var(--text-sub); font-size:12px; margin-top:40px;">软木板上空空的，快上传照片吧</div>'; return;
+    }
+    appState.photos.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'polaroid-card';
+        card.innerHTML = `
+    <img src="${p.img}" class="polaroid-img" onclick="deletePhoto(${p.id})">
+    <div class="polaroid-caption">${p.text}</div>
+`;
+        area.appendChild(card);
+    });
 }
 
 </script>
