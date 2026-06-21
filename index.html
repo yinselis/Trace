@@ -741,9 +741,11 @@ body.time-style-top .message-wrap { margin-top: 18px !important; }
     <!-- 消息多选操作栏 -->
     <div id="multi-select-bar">
         <span style="font-size:14px; font-weight:300; color:var(--text-main);">已选择 <span id="multi-select-count" style="font-weight:bold;">0</span> 项</span>
-        <div style="display:flex; gap:12px;">
-            <button class="btn-noshadow icon-btn" style="width:auto; padding:4px 12px; font-size:13px; border:1px solid var(--line-color);" onclick="cancelMultiSelect()">取消</button>
-            <button class="btn-noshadow icon-btn" style="width:auto; padding:4px 12px; font-size:13px; border:1px dashed #d32f2f; color:#d32f2f;" onclick="doMultiDelete()">抹除</button>
+<div style="display:flex; gap:8px;">
+            <button class="btn-noshadow icon-btn" style="width:auto; padding:4px 10px; font-size:12px; border:1px solid var(--line-color);" onclick="cancelMultiSelect()">取消</button>
+            <button class="btn-noshadow icon-btn" style="width:auto; padding:4px 10px; font-size:12px; border:1px solid var(--line-color);" onclick="doMultiCopy()">复制</button>
+            <button class="btn-noshadow icon-btn" style="width:auto; padding:4px 10px; font-size:12px; border:1px solid var(--line-color);" onclick="doMultiShare()">分享图</button>
+            <button class="btn-noshadow icon-btn" style="width:auto; padding:4px 10px; font-size:12px; border:1px dashed #d32f2f; color:#d32f2f;" onclick="doMultiDelete()">抹除</button>
         </div>
     </div>
 <!-- 全局音乐悬浮小窗 -->
@@ -1200,7 +1202,15 @@ body.time-style-top .message-wrap { margin-top: 18px !important; }
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
     <span>心愿单</span>
 </div>
-    </div><div style="text-align: center; color: var(--text-sub); opacity: 0.6; margin-top: 30px;"><p style="font-size: 11px; margin-top: 6px; letter-spacing: 1px;">更多功能模块等待加载中...</p></div></div></div></div>
+    </div><div style="text-align: center; color: var(--text-sub); margin-top: 30px; line-height: 1.8; font-size: 11px; letter-spacing: 1px;">
+            <p style="opacity: 0.6; margin-bottom: 16px;">更多功能模块等待加载中...</p>
+            <div style="border-top: 1px dashed var(--line-light); padding-top: 16px; font-weight: 300; opacity: 0.8;">
+                本字卡网站关于聊天概率部分<br>参考了小红书@milk 老师 非常感谢！<br>
+                代码都是gemini写的bug很多<br>
+                请勿二传商用，非常感谢
+            </div>
+        </div>
+    </div></div></div>
 
     <!-- 占卜模块面板 -->
         <!-- 占卜模块面板 -->
@@ -1527,10 +1537,19 @@ body.time-style-top .message-wrap { margin-top: 18px !important; }
                         <div class="group-select-row"><select id="card-group-select"></select><button class="btn-noshadow icon-btn" style="width:auto; padding: 0 10px; font-size: 12px;" onclick="createNewGroup()">+ 新增分组</button></div>
                         <textarea class="textarea-box" id="card-text-input" placeholder="每行一句文本，回车换行分割&#10;在吗&#10;怎么啦&#10;摸摸头"></textarea>
                         <button class="btn-full primary" onclick="importTextCards()">注入词库</button>
+<div style="display:flex; gap:8px; margin-top:8px;">
+    <button class="btn-full" onclick="exportCards()" style="border-style:dashed;">导出字卡</button>
+    <button class="btn-full" onclick="document.getElementById('import-cards-upload').click()" style="border-style:dashed;">导入字卡</button>
+    <input type="file" id="import-cards-upload" accept=".json" style="display:none;" onchange="importCards(event)">
+</div>
                     </div>
                     <div class="card-group" id="card-list-container">
                         <div class="setting-label">已装载内存</div>
-                        <div class="card-toolbar"><button class="btn-noshadow icon-btn" style="width:auto; padding: 4px 8px; font-size: 12px;" onclick="selectAllCards()">全选</button><button class="btn-noshadow icon-btn" style="width:auto; padding: 4px 8px; font-size: 12px;" onclick="unselectAllCards()">取消</button><button class="btn-noshadow icon-btn" style="width:auto; padding: 4px 8px; font-size: 12px;" onclick="moveSelectedCards()">移动</button><button class="btn-noshadow icon-btn" style="width:auto; padding: 4px 8px; font-size: 12px; color: #ff4444;" onclick="deleteSelectedCards()">删除</button></div>
+                        <div class="card-toolbar">
+    <select id="card-filter-select" onchange="cardDisplayCount=30; renderCardList()" style="width: auto; height: 28px; padding: 0 4px; font-size: 12px; border: 1px solid var(--line-color); border-radius: 0; background: transparent; color: var(--text-main); margin-right: 8px;">
+        <option value="all">全部分组</option>
+    </select>
+    <button class="btn-noshadow icon-btn" style="width:auto; padding: 4px 8px; font-size: 12px;" onclick="selectAllCards()">全选</button><button class="btn-noshadow icon-btn" style="width:auto; padding: 4px 8px; font-size: 12px;" onclick="unselectAllCards()">取消</button><button class="btn-noshadow icon-btn" style="width:auto; padding: 4px 8px; font-size: 12px;" onclick="moveSelectedCards()">移动</button><button class="btn-noshadow icon-btn" style="width:auto; padding: 4px 8px; font-size: 12px; color: #ff4444;" onclick="deleteSelectedCards()">删除</button></div>
                         <div id="card-list"></div>
                     </div>
                 </div>
@@ -1623,6 +1642,22 @@ body.time-style-top .message-wrap { margin-top: 18px !important; }
         </div>
     </div>
 
+<!-- 聊天记录分享长图模态框 -->
+<div class="modal-overlay" id="share-history-modal" style="z-index: 100000;">
+    <div class="modal-content" style="height: 85vh; background: var(--bg);">
+        <div class="modal-header">
+            <h3>聊天记录分享</h3>
+            <button class="close-btn" onclick="document.getElementById('share-history-modal').classList.remove('open')">关闭</button>
+        </div>
+        <div class="modal-body" id="share-history-area" style="padding: 16px; overflow-y: auto; background: var(--bg);">
+            <!-- 内容渲染在此 -->
+        </div>
+        <div style="padding: 12px; text-align: center; font-size: 11px; color: var(--text-sub); border-top: 1px dashed var(--line-light);">
+            截图保存，方便分享
+        </div>
+    </div>
+</div>
+
 <!-- 数据导出筛选面板 -->
 <div class="modal-overlay" id="export-modal" style="z-index: 100000;">
     <div class="modal-content" style="height: auto; max-height: 80vh;">
@@ -1671,6 +1706,7 @@ body.time-style-top .message-wrap { margin-top: 18px !important; }
     <!-- 上下文菜单 -->
     <div class="context-menu" id="context-menu">
         <div onclick="doQuote()">引用</div>
+        <div onclick="doCopy()">复制</div>
         <div onclick="doDelete()">抹除</div>
         <div onclick="enterMultiSelect()">多选</div>
     </div>
@@ -2452,7 +2488,49 @@ function updateAllowedGroups() {
 function updateGroupSelect() { const select = document.getElementById('card-group-select'); const groups = [...new Set(appState.cards.map(c => c.group))]; if(!groups.includes('日常')) groups.unshift('日常'); const currentVal = select.value || '日常'; select.innerHTML = groups.map(g => `<option value="${g}">${g}</option>`).join(''); if (groups.includes(currentVal)) select.value = currentVal; else select.value = groups[0]; }
 async function createNewGroup() { const name = await uiPrompt("请输入新分组名称:", "新增分组"); if (name && name.trim()) { const select = document.getElementById('card-group-select'); const option = document.createElement('option'); option.value = name.trim(); option.text = name.trim(); select.appendChild(option); select.value = name.trim(); const role = getCurrentRole(); if(!role.allowedCardGroups.includes(name.trim())) { role.allowedCardGroups.push(name.trim()); saveState(); renderAllowedGroups(); } } }
 async function importTextCards() { const text = document.getElementById('card-text-input').value; const group = document.getElementById('card-group-select').value || '日常'; const lines = text.split('\n').map(s => s.trim()).filter(s => s !== ""); if(lines.length > 0) { lines.forEach(line => { if(!appState.cards.find(c => c.text === line && c.group === group)) { appState.cards.push({ text: line, group: group }); } }); document.getElementById('card-text-input').value = ''; saveState(); cardDisplayCount = 30; renderAllowedGroups(); renderCardList(); await uiAlert(`✅ 成功注入 ${lines.length} 条字卡到 [${group}] 分组`); } }
-function renderCardList() { updateGroupSelect(); const list = document.getElementById('card-list'); list.innerHTML = ''; const toRender = appState.cards.slice(0, cardDisplayCount); toRender.forEach((card, index) => { const item = document.createElement('div'); item.className = 'list-item'; item.innerHTML = `<input type="checkbox" class="card-checkbox" value="${index}"><div class="list-item-text"><span class="tag">${card.group}</span> ${card.text}</div><button class="list-item-del" onclick="deleteCard(${index})">✕</button>`; list.appendChild(item); }); if (appState.cards.length > cardDisplayCount) { const moreBtn = document.createElement('button'); moreBtn.className = 'btn-full'; moreBtn.style.marginTop = '10px'; moreBtn.innerText = `查看更多 (${cardDisplayCount} / ${appState.cards.length})`; moreBtn.onclick = () => { cardDisplayCount += 30; renderCardList(); }; list.appendChild(moreBtn); } }
+
+function renderCardList() { 
+    updateGroupSelect(); 
+    
+    // 更新筛选框的内容
+    const filterSel = document.getElementById('card-filter-select');
+    if(filterSel) {
+        const currentFilter = filterSel.value;
+        const groups = [...new Set(appState.cards.map(c => c.group))];
+        filterSel.innerHTML = '<option value="all">全部分组</option>' + groups.map(g => `<option value="${g}">${g}</option>`).join('');
+        filterSel.value = groups.includes(currentFilter) ? currentFilter : 'all';
+    }
+
+    const list = document.getElementById('card-list'); 
+    list.innerHTML = ''; 
+    
+    // 执行过滤
+    const filterVal = filterSel ? filterSel.value : 'all';
+    let filteredCards = appState.cards;
+    if(filterVal !== 'all') {
+        filteredCards = appState.cards.filter(c => c.group === filterVal);
+    }
+
+    const toRender = filteredCards.slice(0, cardDisplayCount); 
+    toRender.forEach((card) => { 
+        // 核心：寻找全局的真实索引，防止删除错乱
+        const globalIndex = appState.cards.indexOf(card);
+        const item = document.createElement('div'); 
+        item.className = 'list-item'; 
+        item.innerHTML = `<input type="checkbox" class="card-checkbox" value="${globalIndex}"><div class="list-item-text"><span class="tag">${card.group}</span> ${card.text}</div><button class="list-item-del" onclick="deleteCard(${globalIndex})">✕</button>`; 
+        list.appendChild(item); 
+    }); 
+    
+    if (filteredCards.length > cardDisplayCount) { 
+        const moreBtn = document.createElement('button'); 
+        moreBtn.className = 'btn-full'; 
+        moreBtn.style.marginTop = '10px'; 
+        moreBtn.innerText = `查看更多 (${cardDisplayCount} / ${filteredCards.length})`; 
+        moreBtn.onclick = () => { cardDisplayCount += 30; renderCardList(); }; 
+        list.appendChild(moreBtn); 
+    } 
+}
+
 function getSelectedCardIndices() { return Array.from(document.querySelectorAll('#card-list .card-checkbox:checked')).map(cb => parseInt(cb.value)).sort((a,b) => b - a); }
 function selectAllCards() { document.querySelectorAll('#card-list .card-checkbox').forEach(cb => cb.checked = true); } function unselectAllCards() { document.querySelectorAll('#card-list .card-checkbox').forEach(cb => cb.checked = false); }
 async function deleteSelectedCards() { const indices = getSelectedCardIndices(); if(indices.length === 0) { await uiAlert("请先勾选要删除的字卡"); return; } if(await uiConfirm(`确定要删除选中的 ${indices.length} 条字卡吗？`)) { indices.forEach(idx => appState.cards.splice(idx, 1)); saveState(); renderAllowedGroups(); renderCardList(); } }
@@ -2638,6 +2716,123 @@ function showContextMenu(e, msg) {
 function closeContextMenu() { document.getElementById('context-menu').style.display = 'none'; }
 function doQuote() { currentQuote = targetMsgText; document.getElementById('reply-preview').style.display = 'flex'; document.getElementById('reply-text').innerText = currentQuote; closeContextMenu(); }
 function cancelReply() { currentQuote = null; document.getElementById('reply-preview').style.display = 'none'; }
+
+/* ================= 新增：复制与分享逻辑 ================= */
+// 单条复制
+function doCopy() {
+    if(navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(targetMsgText).then(() => showToast("已复制到剪贴板"));
+    } else {
+        // 兼容降级方案
+        const textArea = document.createElement("textarea");
+        textArea.value = targetMsgText; document.body.appendChild(textArea);
+        textArea.select(); document.execCommand('copy'); document.body.removeChild(textArea);
+        showToast("已复制到剪贴板");
+    }
+    closeContextMenu();
+}
+
+// 多选复制（格式：名字：内容）
+async function doMultiCopy() {
+    const checked = document.querySelectorAll('.msg-checkbox:checked');
+    if(checked.length === 0) { await uiAlert("未选择任何消息"); return; }
+    const idsToCopy = Array.from(checked).map(cb => Number(cb.value));
+    const role = getCurrentRole();
+    
+    // 保持消息的时间顺序
+    const msgs = role.messages.filter(m => idsToCopy.includes(m.id));
+    let copyText = msgs.map(m => {
+        const name = m.sender === 'me' ? appState.settings.meName : role.name;
+        const text = (m.type === 'text' || m.type === 'mix') ? m.text : '[图片/特殊消息]';
+        return `${name}: ${text}`;
+    }).join('\n');
+    
+    if(navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(copyText).then(() => showToast("多选内容已复制"));
+    } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = copyText; document.body.appendChild(textArea);
+        textArea.select(); document.execCommand('copy'); document.body.removeChild(textArea);
+        showToast("多选内容已复制");
+    }
+    cancelMultiSelect();
+}
+
+// 多选生成分享图
+async function doMultiShare() {
+    const checked = document.querySelectorAll('.msg-checkbox:checked');
+    if(checked.length === 0) { await uiAlert("未选择任何消息"); return; }
+    const ids = Array.from(checked).map(cb => Number(cb.value));
+    const role = getCurrentRole();
+    const msgs = role.messages.filter(m => ids.includes(m.id));
+
+    const area = document.getElementById('share-history-area');
+    area.innerHTML = '<div style="font-weight:bold; text-align:center; margin-bottom: 24px; font-size: 16px; color: var(--text-main); letter-spacing: 2px;">聊天记录</div>';
+
+    msgs.forEach(m => {
+        const isMe = m.sender === 'me';
+        const name = isMe ? appState.settings.meName : role.name;
+        const avatar = isMe ? (appState.settings.meAvatar || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7') : (role.avatar || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
+        const d = new Date(m.time);
+        const timeStr = `${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+
+        let contentHtml = (m.type === 'text' || m.type === 'mix') ? `<span style="line-height:1.5;">${m.text}</span>` : '';
+        if(m.type === 'img' || m.type === 'mix') {
+            contentHtml += `<img src="${m.type==='mix'?m.img:m.text}" style="max-width:140px; border-radius:4px; margin-top:4px; display:block;">`;
+        }
+
+        // 生成干净纯粹的气泡供截图
+        area.innerHTML += `
+            <div style="display:flex; gap:10px; margin-bottom:18px; ${isMe ? 'flex-direction:row-reverse;' : ''}">
+                <img src="${avatar}" style="width:36px; height:36px; border-radius:var(--avatar-radius); object-fit:cover; border: 1px solid var(--line-light);">
+                <div style="display:flex; flex-direction:column; max-width: 75%; ${isMe ? 'align-items:flex-end;' : 'align-items:flex-start;'}">
+                    <span style="font-size:10px; color:var(--text-sub); margin-bottom:4px;">${name} <span style="opacity:0.6; margin-left:4px;">${timeStr}</span></span>
+                    <div style="background:${isMe?'var(--text-main)':'#f0f0f0'}; color:${isMe?'#fff':'#333'}; padding:8px 12px; font-size:14px; word-break:break-all; box-shadow: 2px 2px 0 rgba(0,0,0,0.1); border: 1px solid var(--line-color);">
+                        ${contentHtml}
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    document.getElementById('share-history-modal').classList.add('open');
+    cancelMultiSelect();
+}
+
+/* ================= 新增：字卡导出导入逻辑 ================= */
+function exportCards() {
+    const jsonStr = JSON.stringify(appState.cards, null, 2);
+    try {
+        const blob = new Blob([jsonStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = "cards_backup_" + Date.now() + ".json"; 
+        document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+        showToast("✅ 字卡导出成功");
+    } catch(e) {
+        // 如果浏览器拦截下载，强制复制到剪贴板
+        const textArea = document.createElement("textarea"); textArea.value = jsonStr; document.body.appendChild(textArea); textArea.select(); document.execCommand('copy'); document.body.removeChild(textArea);
+        uiAlert("已复制到剪贴板，请新建文本文件保存为 .json");
+    }
+}
+
+function importCards(e) {
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+        try {
+            const imported = JSON.parse(ev.target.result);
+            if(Array.isArray(imported)) {
+                appState.cards = appState.cards.concat(imported);
+                saveState(); renderCardList(); renderAllowedGroups();
+                uiAlert(`✅ 成功追加导入 ${imported.length} 条字卡`);
+            } else { throw new Error(); }
+        } catch(err) { uiAlert("❌ 文件格式不正确，必须是导出的字卡 JSON"); }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+}
+
 // 长按单条抹除
 function doDelete() { 
     const role = getCurrentRole(); 
@@ -6063,7 +6258,7 @@ setInterval(() => {
 
 /* ================= 更新日志悬浮球引擎 ================= */
 // 💡 以后每次更新了新功能，只需要把这里的 'v1.0' 改成 'v1.1'、'v1.2'... 悬浮球就会再次出现！
-const CURRENT_APP_VERSION = 'v1.0'; 
+const CURRENT_APP_VERSION = 'v1.1'; 
 
 setTimeout(() => {
     const updateBall = document.getElementById('update-float-ball');
@@ -6113,7 +6308,7 @@ setTimeout(() => {
         
         // 3. 如果只是点击（没有滑动），则打开更新日志
         if(!ubHasMoved) {
-            const logText = "如果你看到了这个悬浮球，代表更新成功\n\n本次新增：\n1.手机后台保活功能\n2. TA主动找发消息\n3.来电和消息弹窗的振动声音开关。我从来不开所以无法测试，不喜欢振动和声音请在设置里找到你的浏览器app自行开关\n\n快去首选项的【系统】和【参数】里看看吧！";
+            const logText = "如果你看到了这个悬浮球，代表更新成功\n\n本次新增：\n1. 消息长按支持单条复制\n2. 消息多选支持复制与生成分享截图\n3. 词库支持按分组过滤查看\n4. 支持字卡一键导出与导入\n\n快去试试新功能吧！";
             
             uiAlert(logText, "Trace 更新成功").then(() => {
                 // 点击确定后，永久隐藏并记录当前版本号
