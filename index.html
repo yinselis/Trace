@@ -763,7 +763,12 @@ body.time-style-top .message-wrap { margin-top: 18px !important; }
         <button class="mf-btn" style="border-style: dashed; color: #d32f2f;" onclick="document.getElementById('music-float-widget').classList.remove('show');"><svg viewBox="0 0 24 24" stroke="#d32f2f"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
     </div>
 </div>
-    
+    <!-- 更新日志悬浮球 -->
+<div id="update-float-ball" style="display: none; position: fixed; right: 20px; bottom: 120px; width: 44px; height: 44px; background: var(--text-main); color: var(--bg); border-radius: 50%; justify-content: center; align-items: center; box-shadow: 4px 4px 0 var(--line-color); z-index: 99999; cursor: pointer; transition: transform 0.1s;">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+    <div style="position: absolute; top: -2px; right: -2px; width: 12px; height: 12px; background: #ff5555; border-radius: 50%; border: 2px solid var(--bg);"></div>
+</div>
+
     <!-- 各种面板模块 -->
     <!-- 月经记录面板 -->
 <div class="modal-overlay" id="period-modal">
@@ -1590,6 +1595,20 @@ body.time-style-top .message-wrap { margin-top: 18px !important; }
                                 <span class="toggle-slider"></span>
                             </label>
                         </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0; margin-top: 4px;">
+                            <span style="font-size: 13px; color: var(--text-main); font-weight: 300;">后台弹窗允许震动</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="set-allow-vibrate" onchange="updateSettings()">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0; margin-top: 4px;">
+                            <span style="font-size: 13px; color: var(--text-main); font-weight: 300;">后台弹窗允许声音</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="set-allow-sound" onchange="updateSettings()">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
                         <div class="input-item" style="padding-top: 10px;">
                             <div style="display:flex; justify-content:space-between; width:100%;">
                                 <span>闲置多久后 TA 主动找你 (分钟)</span>
@@ -1981,6 +2000,8 @@ document.getElementById('set-custom-emojis').value = appState.settings.customEmo
 
 const chkKeepAlive = document.getElementById('set-keep-alive'); if(chkKeepAlive) chkKeepAlive.checked = !!appState.settings.keepAlive;
 const chkAiAutoSend = document.getElementById('set-ai-auto-send'); if(chkAiAutoSend) chkAiAutoSend.checked = !!appState.settings.aiAutoSend;
+const chkVibrate = document.getElementById('set-allow-vibrate'); if(chkVibrate) chkVibrate.checked = appState.settings.allowVibrate !== false;
+const chkSound = document.getElementById('set-allow-sound'); if(chkSound) chkSound.checked = appState.settings.allowSound !== false;
 const inputAiAutoTime = document.getElementById('set-ai-auto-time'); if(inputAiAutoTime) inputAiAutoTime.value = appState.settings.aiAutoTime || '';
 if(appState.settings.keepAlive && !window.keepAliveAudio) toggleKeepAlive(true);
 const chkAvatar = document.getElementById('set-hide-avatar'); if(chkAvatar) chkAvatar.checked = !!appState.settings.hideAvatar;
@@ -2026,6 +2047,8 @@ appState.settings.minDelaySec = Number(document.getElementById('set-min-delay').
     appState.settings.allowAutoCall = document.getElementById('set-auto-call').checked;
     appState.settings.keepAlive = document.getElementById('set-keep-alive').checked;
 appState.settings.aiAutoSend = document.getElementById('set-ai-auto-send').checked;
+appState.settings.allowVibrate = document.getElementById('set-allow-vibrate').checked;
+appState.settings.allowSound = document.getElementById('set-allow-sound').checked;
 appState.settings.aiAutoTime = document.getElementById('set-ai-auto-time').value;
     
     appState.settings.customEmojis = document.getElementById('set-custom-emojis').value;
@@ -2279,7 +2302,7 @@ function triggerIncomingCall() {
     callState.el.classList.remove('hidden');
     
     // 手机震动反馈 (模拟铃声节奏)
-    if(navigator.vibrate) { callState.vibTimer = setInterval(() => navigator.vibrate([300, 150, 300, 600]), 1500); }
+    if(navigator.vibrate && appState.settings.allowVibrate !== false) { callState.vibTimer = setInterval(() => navigator.vibrate([300, 150, 300, 600]), 1500); }
 
     // 22秒不接，自动挂断
     callState.ringTimeout = setTimeout(() => {
@@ -5931,10 +5954,10 @@ window.testSysNotification = function() {
 function doTestNotify() {
     if (navigator.serviceWorker && Notification.permission === "granted") {
         navigator.serviceWorker.ready.then(reg => {
-            reg.showNotification("ECHO 系统测试", { 
-                body: "太棒了！你的底层系统横幅弹窗完全正常！", 
-                vibrate: [200, 100, 200] 
-            });
+let notifOptions = { body: "太棒了！你的底层系统横幅弹窗完全正常！" };
+         if (appState.settings.allowVibrate !== false) notifOptions.vibrate = [200, 100, 200];
+         if (appState.settings.allowSound === false) notifOptions.silent = true;
+         reg.showNotification("系统测试", notifOptions);
             uiAlert("已经让系统去发通知了！\n看看手机顶部有没有震动并滑出横幅？");
         }).catch(() => fallbackNotify());
     } else {
@@ -5944,14 +5967,14 @@ function doTestNotify() {
 
 function fallbackNotify() {
     if (window.Notification && Notification.permission === "granted") {
-        new Notification("ECHO 系统测试", { body: "这是一个降级版弹窗！" });
+        new Notification("系统测试", { body: "这是一个降级版弹窗！" });
         uiAlert("触发了降级版通知。");
     } else {
         uiAlert("当前环境不支持系统通知。");
     }
 }
 
-// 4. TA主动找你的后台监听循环 (每60秒检查一次)
+// 4. TA主动找你的后台监听循环 (每60秒检查一次) - 极致混乱真人版
 setInterval(() => {
     // 如果没开功能，直接退出
     if (!appState.settings.aiAutoSend) return;
@@ -5963,39 +5986,145 @@ setInterval(() => {
     // 如果最后一条是你发的（你在等他回），他不应该主动发新话题
     if (lastMsg.sender === 'me') return; 
     
+    // 🌟 1. 侦测你是否说过话，如果说了，立刻重置“主动出击次数”
+    // 获取聊天记录里，属于你的最后一条消息
+    const lastMeMsg = [...role.messages].reverse().find(m => m.sender === 'me');
+    const currentMeMsgId = lastMeMsg ? lastMeMsg.id : null;
+    
+    if (appState.settings.lastMeMsgId !== currentMeMsgId) {
+        // 发现你发了新消息！清零记录，TA 的情绪恢复稳定
+        appState.settings.proactiveStreak = 0;
+        appState.settings.lastMeMsgId = currentMeMsgId;
+        appState.settings.nextProactiveTime = 0; 
+        saveState();
+    }
+    
     const timeDiff = Date.now() - lastMsg.time;
     const minutesPassed = timeDiff / (1000 * 60);
-    const customWaitTime = parseInt(appState.settings.aiAutoTime) || 15;
+    const baseWaitTime = parseInt(appState.settings.aiAutoTime) || 15;
     
-    // 如果闲置时间达到了设定的分钟数
-    if (minutesPassed >= customWaitTime) {
-        // 防止疯狂连发，判定冷却时间 (主动发完后，至少冷却和闲置时间一样长)
-        let lastInit = appState.settings.lastAutoInitTime || 0;
-        if ((Date.now() - lastInit) / (1000 * 60) < customWaitTime) return; 
+    // 🌟 2. 判定当前是第几次主动找你，决定目标时间
+    let targetWaitTime;
+    let isFirstTime = (appState.settings.proactiveStreak || 0) === 0;
+    
+    if (isFirstTime) {
+        // 第一次：绝对准时！就是你设定的基础时间 (例如 15 分钟)
+        targetWaitTime = baseWaitTime;
+    } else {
+        // 第二次及以后：极致混乱！
+        // 如果还没生成混乱时间，就随机生成一个 (基础时间的 0.1倍 到 2.0倍 之间)
+        // 比如设了15分钟，可能变成 1.5 分钟，也可能变成 30 分钟！
+        if (!appState.settings.nextProactiveTime) {
+            const multiplier = 0.1 + Math.random() * 1.9; 
+            appState.settings.nextProactiveTime = baseWaitTime * multiplier;
+            saveState();
+        }
+        targetWaitTime = appState.settings.nextProactiveTime;
+    }
+    
+    // 保底限制：再怎么乱，两次发消息间隔也不能少于 1 分钟，防止刷屏卡死
+    if (targetWaitTime < 1) targetWaitTime = 1;
+    
+    // 如果闲置时间达到了目标时间
+    if (minutesPassed >= targetWaitTime) {
         
-        // 20% 概率触发，让它显得比较随机自然
-        if (Math.random() < 0.20) {
+        // 第一次找你 100% 触发（绝对准时）
+        // 第二次及以后 20% 概率触发（即使混乱时间到了，也可能再随机拖延几分钟，更加不可预测）
+        let triggerProbability = isFirstTime ? 1.0 : 0.20;
+        
+        if (Math.random() < triggerProbability) {
             console.log("TA 正在主动寻找你...");
-            appState.settings.lastAutoInitTime = Date.now();
+            
+            // 连击次数 + 1
+            appState.settings.proactiveStreak = (appState.settings.proactiveStreak || 0) + 1;
+            
+            // 为下一次生成全新的混乱时间！(重新洗牌)
+            const multiplier = 0.1 + Math.random() * 1.9; 
+            appState.settings.nextProactiveTime = baseWaitTime * multiplier;
             saveState();
             
-            // 触发自动回复 (抽取你的预设字卡)
+            // 触发自动回复 (完全遵守几连发、延迟、字卡抽取等设置！)
             triggerAutoReply();
             
             // 顺便弹出系统横幅通知告诉你
             if (window.Notification && Notification.permission === "granted") {
                 if (navigator.serviceWorker) {
                     navigator.serviceWorker.ready.then(reg => {
-                        reg.showNotification(role.name || "TA", { 
-                            body: "发来了一条新消息，快看看吧...", 
-                            vibrate: [100, 50, 100, 50, 100] 
-                        });
+                        let notifOptions = { body: "发来了一条新消息，快看看吧..." };
+                     if (appState.settings.allowVibrate !== false) notifOptions.vibrate = [100, 50, 100, 50, 100];
+                     if (appState.settings.allowSound === false) notifOptions.silent = true;
+                     reg.showNotification(role.name || "TA", notifOptions);
                     });
                 }
             }
         }
     }
 }, 60000); // 60000 毫秒 = 1 分钟检测一次
+
+/* ================= 更新日志悬浮球引擎 ================= */
+// 💡 以后每次更新了新功能，只需要把这里的 'v1.0' 改成 'v1.1'、'v1.2'... 悬浮球就会再次出现！
+const CURRENT_APP_VERSION = 'v1.0'; 
+
+setTimeout(() => {
+    const updateBall = document.getElementById('update-float-ball');
+    
+    // 1. 版本比对：如果用户没看过当前版本，就显示悬浮球
+    if (appState.settings.lastSeenVersion !== CURRENT_APP_VERSION) {
+        updateBall.style.display = 'flex';
+    }
+
+    // 2. 随意拖拽逻辑
+    let ubStartX = 0, ubStartY = 0, ubInitX = 0, ubInitY = 0, ubIsDragging = false, ubHasMoved = false;
+    
+    updateBall.addEventListener('touchstart', (e) => {
+        const touch = e.touches[0];
+        ubStartX = touch.clientX; ubStartY = touch.clientY;
+        const rect = updateBall.getBoundingClientRect();
+        ubInitX = rect.left; ubInitY = rect.top;
+        ubIsDragging = true; ubHasMoved = false;
+        updateBall.style.transition = 'none';
+        updateBall.style.transform = 'scale(1.05)';
+    }, {passive: true});
+    
+    updateBall.addEventListener('touchmove', (e) => {
+        if(!ubIsDragging) return;
+        const touch = e.touches[0];
+        const dx = touch.clientX - ubStartX; const dy = touch.clientY - ubStartY;
+        if(Math.abs(dx) > 5 || Math.abs(dy) > 5) ubHasMoved = true;
+        
+        let newX = ubInitX + dx; let newY = ubInitY + dy;
+        const maxW = window.innerWidth - updateBall.offsetWidth;
+        const maxH = window.innerHeight - updateBall.offsetHeight;
+        
+        if(newX < 0) newX = 0; if(newX > maxW) newX = maxW;
+        if(newY < 0) newY = 0; if(newY > maxH) newY = maxH;
+        
+        updateBall.style.left = newX + 'px';
+        updateBall.style.top = newY + 'px';
+        updateBall.style.right = 'auto';
+        updateBall.style.bottom = 'auto';
+    }, {passive: true});
+    
+    updateBall.addEventListener('touchend', (e) => {
+        if(!ubIsDragging) return;
+        ubIsDragging = false;
+        updateBall.style.transition = 'transform 0.1s';
+        updateBall.style.transform = 'scale(1)';
+        
+        // 3. 如果只是点击（没有滑动），则打开更新日志
+        if(!ubHasMoved) {
+            const logText = "如果你看到了这个悬浮球，代表更新成功\n\n本次新增：\n1.手机后台保活功能\n2. TA主动找发消息\n3.来电和消息弹窗的振动声音开关。我从来不开所以无法测试，不喜欢振动和声音请在设置里找到你的浏览器app自行开关\n\n快去首选项的【系统】和【参数】里看看吧！";
+            
+            uiAlert(logText, "Trace 更新成功").then(() => {
+                // 点击确定后，永久隐藏并记录当前版本号
+                appState.settings.lastSeenVersion = CURRENT_APP_VERSION;
+                saveState();
+                updateBall.style.display = 'none';
+                showToast("日志已隐藏，下次更新时再见！");
+            });
+        }
+    });
+}, 1000); // 延迟 1 秒加载，避开开屏动画
 
 </script>
 </body>
