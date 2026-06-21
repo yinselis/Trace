@@ -703,6 +703,7 @@ body.time-style-top .message-wrap { margin-top: 18px !important; }
         <div class="tb-tools">
             <button class="icon-btn btn-noshadow" id="theme-toggle-btn" onclick="toggleDarkMode()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></button>
             <button class="icon-btn btn-noshadow" onclick="startVoiceCall()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg></button>
+            
             <button class="icon-btn btn-noshadow" onclick="openGameModal()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M8 10v4"></path><circle cx="15" cy="13" r="1"></circle><circle cx="18" cy="11" r="1"></circle></svg></button>
             <button class="icon-btn btn-noshadow" onclick="openThemeModal()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M12 2.69l5.66 4.2c.82.61 1.34 1.57 1.34 2.6v8.02a2.5 2.5 0 0 1-2.5 2.5H7.5a2.5 2.5 0 0 1-2.5-2.5v-8.02c0-1.03.52-1.99 1.34-2.6L12 2.69z"></path></svg></button>
             <button class="icon-btn btn-noshadow" onclick="openSettingsModal()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="1.5"></circle><circle cx="12" cy="5" r="1.5"></circle><circle cx="12" cy="19" r="1.5"></circle></svg></button>
@@ -2217,7 +2218,7 @@ function triggerIncomingCall() {
     if (!appState.settings.allowAutoCall || callState.active) return; // 没开功能，或者正在打电话，就不触发
     
     // 如果底座还没生成，先偷偷生成一次
-    if (!callState.el) { startVoiceCall(); endCall(true); }
+    if (!callState.el) { startVoiceCall(); clearTimeout(callState.ringTimeout); }
     
     const role = getCurrentRole();
     callState.active = true;
