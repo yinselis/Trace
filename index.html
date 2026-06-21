@@ -1574,6 +1574,30 @@ body.time-style-top .message-wrap { margin-top: 18px !important; }
                         <div class="setting-label">当前角色记录统计</div>
                         <div class="stats-box"><div class="stats-row"><span>我发送的：</span><span id="stat-me">0</span></div><div class="stats-row"><span>Ta发送的：</span><span id="stat-them">0</span></div><div class="stats-row" style="border-bottom: none; font-weight: 500;"><span>总消息数：</span><span id="stat-total">0</span></div></div>
                     </div>
+                    <div class="card-group">
+                        <div class="setting-label">系统级进阶设定</div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;">
+                            <span style="font-size: 13px; color: var(--text-main); font-weight: 300;">启用后台保活</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="set-keep-alive" onchange="toggleKeepAlive(this.checked); updateSettings();">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0; margin-top: 4px;">
+                            <span style="font-size: 13px; color: var(--text-main); font-weight: 300;">允许 TA 闲置时主动发消息</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="set-ai-auto-send" onchange="updateSettings()">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="input-item" style="padding-top: 10px;">
+                            <div style="display:flex; justify-content:space-between; width:100%;">
+                                <span>闲置多久后 TA 主动找你 (分钟)</span>
+                            </div>
+                            <input type="number" id="set-ai-auto-time" onchange="updateSettings()" placeholder="默认填写: 15" style="width: 100%; border: none; border-bottom: 1px solid var(--line-light); background: transparent; padding: 6px 0; font-size: 15px; font-weight: 300; color: var(--text-main); outline: none; transition: border-color 0.2s;">
+                        </div>
+                        <button class="btn-full" onclick="testSysNotification()" style="margin-top: 14px; border-style: dashed;">测试系统推送弹窗</button>
+                    </div>
                     <div class="card-group"><div class="setting-label">数据控制</div><button class="btn-full" onclick="openExportModal()" style="margin-bottom: 10px;">备份全局档案</button><button class="btn-full primary" onclick="document.getElementById('import-data-file').click()" style="margin-bottom: 10px;">恢复全局档案</button><input type="file" id="import-data-file" accept=".json" onchange="importData(event)"><button class="btn-full danger" onclick="clearAllData()">格式化一切</button></div>
                 </div>
             </div>
@@ -1955,6 +1979,10 @@ document.getElementById('set-min-delay').value = appState.settings.minDelaySec |
 document.getElementById('set-auto-call').checked = !!appState.settings.allowAutoCall;
 document.getElementById('set-custom-emojis').value = appState.settings.customEmojis || "";
 
+const chkKeepAlive = document.getElementById('set-keep-alive'); if(chkKeepAlive) chkKeepAlive.checked = !!appState.settings.keepAlive;
+const chkAiAutoSend = document.getElementById('set-ai-auto-send'); if(chkAiAutoSend) chkAiAutoSend.checked = !!appState.settings.aiAutoSend;
+const inputAiAutoTime = document.getElementById('set-ai-auto-time'); if(inputAiAutoTime) inputAiAutoTime.value = appState.settings.aiAutoTime || '';
+if(appState.settings.keepAlive && !window.keepAliveAudio) toggleKeepAlive(true);
 const chkAvatar = document.getElementById('set-hide-avatar'); if(chkAvatar) chkAvatar.checked = !!appState.settings.hideAvatar;
 const chkTime = document.getElementById('set-hide-time'); if(chkTime) chkTime.checked = !!appState.settings.hideTime;
 const chkRead = document.getElementById('set-hide-read'); if(chkRead) chkRead.checked = !!appState.settings.hideRead;
@@ -1996,6 +2024,9 @@ appState.settings.minDelaySec = Number(document.getElementById('set-min-delay').
     
     appState.settings.allowReadNoReply = document.getElementById('set-read-no-reply').checked;
     appState.settings.allowAutoCall = document.getElementById('set-auto-call').checked;
+    appState.settings.keepAlive = document.getElementById('set-keep-alive').checked;
+appState.settings.aiAutoSend = document.getElementById('set-ai-auto-send').checked;
+appState.settings.aiAutoTime = document.getElementById('set-ai-auto-time').value;
     
     appState.settings.customEmojis = document.getElementById('set-custom-emojis').value;
         const toggleEmoji = document.getElementById('set-status-emoji-enable');
@@ -5837,6 +5868,134 @@ function renderPhotoWall() {
         area.appendChild(card);
     });
 }
+
+/* ================= 高级拓展引擎：后台保活、系统通知、主动发信 ================= */
+
+// 1. 首次点击屏幕静默请求通知权限
+document.addEventListener('click', function requestNotify() {
+    if (window.Notification && Notification.permission !== "granted" && Notification.permission !== "denied") {
+        Notification.requestPermission();
+    }
+    document.removeEventListener('click', requestNotify);
+}, { once: true });
+
+// 2. 音频后台保活引擎 (基于 MediaSession)
+window.keepAliveAudio = null;
+window.keepAliveUnlocked = false;
+window.toggleKeepAlive = function(enable) {
+    if (enable) {
+        if (!window.keepAliveAudio) {
+            // 注意：这里读取的是你同目录下的 silence.mp3
+            window.keepAliveAudio = new Audio('./silence.mp3');
+            window.keepAliveAudio.loop = true;
+            window.keepAliveAudio.volume = 0.01; // 极低音量防止干扰
+            
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: 'Trace 信号维持中...',
+                    artist: '后台保活引擎运行中'
+                });
+                navigator.mediaSession.setActionHandler('play', () => { if (window.keepAliveAudio) window.keepAliveAudio.play(); });
+                navigator.mediaSession.setActionHandler('pause', () => { if (window.keepAliveAudio) window.keepAliveAudio.pause(); });
+            }
+        }
+        
+        const playPromise = window.keepAliveAudio.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(() => {
+                if (!window.keepAliveUnlocked) {
+                    window.keepAliveUnlocked = true;
+                    const unlock = () => { if (appState.settings.keepAlive) window.keepAliveAudio.play().catch(()=>{}); };
+                    document.addEventListener('touchstart', unlock, { once: true });
+                    document.addEventListener('click', unlock, { once: true });
+                }
+            });
+        }
+    } else {
+        if (window.keepAliveAudio) window.keepAliveAudio.pause();
+    }
+};
+
+// 3. 测试系统弹窗通知
+window.testSysNotification = function() {
+    if (window.Notification && Notification.permission !== "granted") {
+        Notification.requestPermission().then(res => {
+            if(res === 'granted') doTestNotify();
+            else uiAlert("通知权限被拒绝，无法弹窗！请在手机浏览器设置中开启通知权限。");
+        });
+    } else {
+        doTestNotify();
+    }
+};
+
+function doTestNotify() {
+    if (navigator.serviceWorker && Notification.permission === "granted") {
+        navigator.serviceWorker.ready.then(reg => {
+            reg.showNotification("ECHO 系统测试", { 
+                body: "太棒了！你的底层系统横幅弹窗完全正常！", 
+                vibrate: [200, 100, 200] 
+            });
+            uiAlert("已经让系统去发通知了！\n看看手机顶部有没有震动并滑出横幅？");
+        }).catch(() => fallbackNotify());
+    } else {
+        fallbackNotify();
+    }
+}
+
+function fallbackNotify() {
+    if (window.Notification && Notification.permission === "granted") {
+        new Notification("ECHO 系统测试", { body: "这是一个降级版弹窗！" });
+        uiAlert("触发了降级版通知。");
+    } else {
+        uiAlert("当前环境不支持系统通知。");
+    }
+}
+
+// 4. TA主动找你的后台监听循环 (每60秒检查一次)
+setInterval(() => {
+    // 如果没开功能，直接退出
+    if (!appState.settings.aiAutoSend) return;
+    
+    const role = getCurrentRole();
+    if (!role.messages || role.messages.length === 0) return;
+    
+    const lastMsg = role.messages[role.messages.length - 1];
+    // 如果最后一条是你发的（你在等他回），他不应该主动发新话题
+    if (lastMsg.sender === 'me') return; 
+    
+    const timeDiff = Date.now() - lastMsg.time;
+    const minutesPassed = timeDiff / (1000 * 60);
+    const customWaitTime = parseInt(appState.settings.aiAutoTime) || 15;
+    
+    // 如果闲置时间达到了设定的分钟数
+    if (minutesPassed >= customWaitTime) {
+        // 防止疯狂连发，判定冷却时间 (主动发完后，至少冷却和闲置时间一样长)
+        let lastInit = appState.settings.lastAutoInitTime || 0;
+        if ((Date.now() - lastInit) / (1000 * 60) < customWaitTime) return; 
+        
+        // 20% 概率触发，让它显得比较随机自然
+        if (Math.random() < 0.20) {
+            console.log("TA 正在主动寻找你...");
+            appState.settings.lastAutoInitTime = Date.now();
+            saveState();
+            
+            // 触发自动回复 (抽取你的预设字卡)
+            triggerAutoReply();
+            
+            // 顺便弹出系统横幅通知告诉你
+            if (window.Notification && Notification.permission === "granted") {
+                if (navigator.serviceWorker) {
+                    navigator.serviceWorker.ready.then(reg => {
+                        reg.showNotification(role.name || "TA", { 
+                            body: "发来了一条新消息，快看看吧...", 
+                            vibrate: [100, 50, 100, 50, 100] 
+                        });
+                    });
+                }
+            }
+        }
+    }
+}, 60000); // 60000 毫秒 = 1 分钟检测一次
 
 </script>
 </body>
