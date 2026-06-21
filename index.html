@@ -6258,7 +6258,7 @@ setInterval(() => {
 
 /* ================= 更新日志悬浮球引擎 ================= */
 // 💡 以后每次更新了新功能，只需要把这里的 'v1.0' 改成 'v1.1'、'v1.2'... 悬浮球就会再次出现！
-const CURRENT_APP_VERSION = 'v1.1'; 
+const CURRENT_APP_VERSION = 'v1.2'; 
 
 setTimeout(() => {
     const updateBall = document.getElementById('update-float-ball');
@@ -6308,7 +6308,7 @@ setTimeout(() => {
         
         // 3. 如果只是点击（没有滑动），则打开更新日志
         if(!ubHasMoved) {
-            const logText = "如果你看到了这个悬浮球，代表更新成功\n\n本次新增：\n1. 消息长按支持单条复制\n2. 消息多选支持复制与生成分享截图\n3. 词库支持按分组过滤查看\n4. 支持字卡一键导出与导入\n\n快去试试新功能吧！";
+            const logText = "如果你看到了这个悬浮球，代表更新成功\n\n本次新增：\n1. 消息长按支持单条复制\n2. 消息多选支持复制与生成分享截图\n3. 词库支持按分组过滤查看\n4. 支持字卡一键导出与导入\n\n(◍ ´꒳` ◍)\n本字卡网站关于聊天概率部分参考了小红书@milk 老师 非常感谢！\n代码都是gemini写的bug很多\n请勿二传商用，非常感谢";
             
             uiAlert(logText, "Trace 更新成功").then(() => {
                 // 点击确定后，永久隐藏并记录当前版本号
