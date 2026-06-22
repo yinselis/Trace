@@ -1487,6 +1487,10 @@ body.time-style-top .message-wrap { margin-top: 18px !important; }
                         <div class="setting-label">视觉呈现</div>
                         <div class="input-item"><span>当前角色代号</span><input type="text" id="set-them-name" onchange="updateSettings()" placeholder="当前角色的称呼"></div>
                         <div class="input-item" style="padding-top: 5px;"><span>自己代号 (全局)</span><input type="text" id="set-me-name" onchange="updateSettings()" placeholder="自己的称呼"></div>
+                        <div style="display: flex; gap: 8px; padding-top: 15px;">
+    <button class="btn-full" style="padding: 8px; font-size: 12px;" onclick="document.getElementById('them-avatar-upload').click()">更换 Ta 的头像</button>
+    <button class="btn-full" style="padding: 8px; font-size: 12px;" onclick="document.getElementById('me-avatar-upload').click()">更换我的头像</button>
+</div>
                         <div class="input-item" style="padding-top: 15px;"><div style="display:flex; justify-content:space-between; width:100%;"><span>头像圆角 (<span id="radius-val" style="font-family:monospace;">0</span>%)</span></div><input type="range" id="set-avatar-radius" min="0" max="50" step="1" oninput="updateRadiusRealtime()" onchange="updateSettings()"></div>
                         <div class="input-item" style="padding-top: 15px;"><div style="display:flex; justify-content:space-between; width:100%;"><span>全局字号 (<span id="fontsize-val" style="font-family:monospace;">15</span>px)</span></div><input type="range" id="set-font-size" min="12" max="24" step="1" oninput="updateFontSizeRealtime()" onchange="updateSettings()"></div>
 <div class="input-item" style="padding-top: 15px;"><div style="display:flex; justify-content:space-between; width:100%;"><span>全局字重 (<span id="fontweight-val" style="font-family:monospace;">300</span>)</span></div><input type="range" id="set-font-weight" min="100" max="900" step="100" oninput="updateFontWeightRealtime()" onchange="updateSettings()"></div>
@@ -1550,6 +1554,9 @@ body.time-style-top .message-wrap { margin-top: 18px !important; }
         <option value="all">全部分组</option>
     </select>
     <button class="btn-noshadow icon-btn" style="width:auto; padding: 4px 8px; font-size: 12px;" onclick="selectAllCards()">全选</button><button class="btn-noshadow icon-btn" style="width:auto; padding: 4px 8px; font-size: 12px;" onclick="unselectAllCards()">取消</button><button class="btn-noshadow icon-btn" style="width:auto; padding: 4px 8px; font-size: 12px;" onclick="moveSelectedCards()">移动</button><button class="btn-noshadow icon-btn" style="width:auto; padding: 4px 8px; font-size: 12px; color: #ff4444;" onclick="deleteSelectedCards()">删除</button></div>
+    <div style="margin-top: 8px; margin-bottom: 8px;">
+    <input type="text" id="card-search-input" placeholder="搜索包含的文字..." oninput="cardDisplayCount=30; renderCardList()" style="width: 100%; border: 1px solid var(--line-color); padding: 8px 10px; font-size: 13px; background: transparent; color: var(--text-main); outline: none;">
+</div>
                         <div id="card-list"></div>
                     </div>
                 </div>
@@ -2510,7 +2517,13 @@ function renderCardList() {
     if(filterVal !== 'all') {
         filteredCards = appState.cards.filter(c => c.group === filterVal);
     }
-
+    
+const searchInput = document.getElementById('card-search-input');
+    const searchVal = searchInput ? searchInput.value.trim().toLowerCase() : '';
+    if(searchVal) {
+        filteredCards = filteredCards.filter(c => c.text.toLowerCase().includes(searchVal));
+    }
+    
     const toRender = filteredCards.slice(0, cardDisplayCount); 
     toRender.forEach((card) => { 
         // 核心：寻找全局的真实索引，防止删除错乱
@@ -6258,7 +6271,7 @@ setInterval(() => {
 
 /* ================= 更新日志悬浮球引擎 ================= */
 // 💡 以后每次更新了新功能，只需要把这里的 'v1.0' 改成 'v1.1'、'v1.2'... 悬浮球就会再次出现！
-const CURRENT_APP_VERSION = 'v1.2'; 
+const CURRENT_APP_VERSION = 'v1.3'; 
 
 setTimeout(() => {
     const updateBall = document.getElementById('update-float-ball');
@@ -6308,7 +6321,7 @@ setTimeout(() => {
         
         // 3. 如果只是点击（没有滑动），则打开更新日志
         if(!ubHasMoved) {
-            const logText = "如果你看到了这个悬浮球，代表更新成功\n\n本次新增：\n1. 消息长按支持单条复制\n2. 消息多选支持复制与生成分享截图\n3. 词库支持按分组过滤查看\n4. 支持字卡一键导出与导入\n\n(◍ ´꒳` ◍)\n本字卡网站关于聊天概率部分参考了小红书@milk 老师 非常感谢！\n代码都是gemini写的bug很多\n请勿二传商用，非常感谢";
+            const logText = "如果你看到了这个悬浮球，代表更新成功\n\n本次新增：\n1. 词库新增文本搜索功能，方便快速筛查与删除\n2. 视觉呈现面板新增「更换头像」快捷按钮\n\n(◍ ´꒳` ◍)\n本字卡网站关于聊天概率部分参考了小红书@milk 老师 非常感谢！\n代码都是gemini写的bug很多\n请勿二传商用，非常感谢";
             
             uiAlert(logText, "Trace 更新成功").then(() => {
                 // 点击确定后，永久隐藏并记录当前版本号
