@@ -1146,19 +1146,47 @@ body.time-style-top .message-wrap { margin-top: 18px !important; }
     </div>
     
     <!-- 心愿打卡单面板 -->
+<!-- 心愿单面板 (恢复纯净) -->
 <div class="modal-overlay" id="wish-modal">
     <div class="modal-content" style="height: 85vh;">
         <div class="modal-header">
-            <h3>我们的心愿单</h3>
+            <h3>心愿单</h3>
             <button class="close-btn" onclick="closeWishModal()">收起</button>
         </div>
         <div class="modal-body" style="padding: 16px;">
             <div style="font-size: 11px; color: var(--text-sub); margin-bottom: 12px;">写下想和 Ta 一起做的事，完成时打个勾吧~</div>
-<div class="input-item" style="flex-direction: row; gap: 8px; margin-bottom: 20px; align-items: center;">
-    <input type="text" id="wish-input" placeholder="例如：一起看初雪..." style="flex: 1; height: 38px; border: 1px solid var(--line-color); padding: 0 12px; margin: 0; border-radius: 0;">
-    <button class="btn-noshadow icon-btn" style="height: 38px; border: 1px solid var(--line-color); padding: 0 16px; margin: 0; border-radius: 0;" onclick="addWish()">许愿</button>
-</div>
+            <div class="input-item" style="flex-direction: row; gap: 8px; margin-bottom: 20px; align-items: center;">
+                <input type="text" id="wish-input" placeholder="例如：一起看初雪..." style="flex: 1; height: 38px; border: 1px solid var(--line-color); padding: 0 12px; margin: 0; border-radius: 0;">
+                <button class="btn-noshadow icon-btn" style="height: 38px; border: 1px solid var(--line-color); padding: 0 16px; margin: 0; border-radius: 0;" onclick="addWish()">许愿</button>
+            </div>
             <div id="wish-list-area" style="display: flex; flex-direction: column; gap: 10px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 共同存钱罐面板 (全新独立记账版) -->
+<div class="modal-overlay" id="piggy-bank-modal">
+    <div class="modal-content" style="height: 85vh; background: var(--bg);">
+        <div class="modal-header">
+            <h3>共同存钱罐</h3>
+            <div style="display:flex; gap:8px;">
+                <button class="close-btn" onclick="sharePiggyBank()">分享</button>
+                <button class="close-btn" onclick="closePiggyBankModal()">收起</button>
+            </div>
+        </div>
+        <div class="modal-body" style="padding: 16px;">
+            <div class="piggy-bank-wrap" style="border: 1px solid var(--line-color); padding: 16px; margin-bottom: 20px; box-shadow: 4px 4px 0 var(--line-color); background: #fff;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom: 12px;">
+                    <span style="font-size:16px; font-weight:bold; color:var(--text-main); cursor:pointer;" id="pb-name" onclick="editPiggyBank()">点击设置目标...</span>
+                    <span style="font-size:14px; color:var(--text-sub); font-family:monospace;" id="pb-status">0 / 0</span>
+                </div>
+                <div style="height: 12px; border: 1px solid var(--line-color); background: #fafafa; position: relative;">
+                    <div id="pb-bar" style="height: 100%; width: 0%; background: var(--text-main); transition: width 0.5s ease-out;"></div>
+                </div>
+                <button class="btn-full primary" style="margin-top: 16px; padding: 10px; border-style:double; border-width:3px;" onclick="addPiggyMoney()">+ 记一笔账</button>
+            </div>
+            <div class="setting-label">流水账单记录</div>
+            <div id="pb-records-area" style="display: flex; flex-direction: column; padding-bottom: 20px;"></div>
         </div>
     </div>
 </div>
@@ -1198,6 +1226,12 @@ body.time-style-top .message-wrap { margin-top: 18px !important; }
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
     <span>照片墙</span>
 </div>
+
+<div class="game-icon-btn" onclick="openPiggyBankModal()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+    <span>存钱罐</span>
+</div>
+
 <div class="game-icon-btn" onclick="openWishModal()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
     <span>心愿单</span>
@@ -1578,13 +1612,23 @@ body.time-style-top .message-wrap { margin-top: 18px !important; }
                         <button class="btn-full" onclick="document.getElementById('sticker-upload').click()" style="margin-top: 10px;">本地新增图像(自动转码)</button>
                     </div>
 
-                    <div class="card-group">
+<div class="card-group">
                         <div class="setting-label" style="display: flex; justify-content: space-between; align-items: center; border-bottom: none; padding-bottom: 0;">
                             <span>文字Emoji混入库</span>
                         </div>
                         <span style="font-size: 10px; color: var(--text-sub); line-height: 1.4;">开启后TA的名字下方会出现状态emoji，和句尾可能会带上emoji</span>
                         <div class="input-item" style="margin-top: -6px;">
-                            <textarea class="textarea-box" id="set-custom-emojis" placeholder="在此输入Emoji... (留空则不生效)" onchange="updateSettings()" style="height: 80px;"></textarea>
+                            <textarea class="textarea-box" id="set-custom-emojis" placeholder="在此输入Emoji... (留空则不生效)" onchange="updateSettings()" style="height: 60px;"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="card-group">
+                        <div class="setting-label" style="display: flex; justify-content: space-between; align-items: center; border-bottom: none; padding-bottom: 0;">
+                            <span>自定义动作库 / 拍一拍</span>
+                        </div>
+                        <span style="font-size: 10px; color: var(--text-sub); line-height: 1.4;">每行输入一个动作<br>例如：拍了拍我的手背</span>
+                        <div class="input-item" style="margin-top: -6px;">
+                            <textarea class="textarea-box" id="set-custom-pats" placeholder="拍了拍我的脑袋&#10;戳了戳我的肚子" onchange="updateSettings()" style="height: 80px;"></textarea>
                         </div>
                     </div>
 
@@ -1703,6 +1747,11 @@ body.time-style-top .message-wrap { margin-top: 18px !important; }
                 <label style="display:flex; align-items:center; font-size:14px; gap:8px;">
                     <input type="checkbox" class="card-checkbox export-cb" value="tarotHistory" checked> 神秘学(塔罗)历史
                 </label>
+                
+                <label style="display:flex; align-items:center; font-size:14px; gap:8px;">
+    <input type="checkbox" class="card-checkbox export-cb" value="piggyBank" checked> 共同存钱罐记录
+</label>
+
             </div>
             
             <button class="btn-full primary" onclick="confirmExportData()">生成备份文件</button>
@@ -1840,6 +1889,28 @@ function showTyping() {
 
 function hideTyping() { if (typingElement) typingElement.style.display = 'none'; }
 
+// ====== 新增：字体防卡顿核心引擎 ======
+window.activeFontBlobUrl = null; // 内存指针
+
+function getFontBlobUrl(base64Data) {
+    if (!base64Data) return null;
+    if (base64Data.startsWith('blob:')) return base64Data;
+    try {
+        const parts = base64Data.split(',');
+        const mime = parts[0].match(/:(.*?);/)[1];
+        const bstr = atob(parts[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while(n--) { u8arr[n] = bstr.charCodeAt(n); }
+        const blob = new Blob([u8arr], {type: mime});
+        return URL.createObjectURL(blob);
+    } catch(e) {
+        console.error("字体解析失败", e);
+        return null;
+    }
+}
+// ======================================
+
 function compressImage(file, maxWidth = 800) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader(); reader.readAsDataURL(file);
@@ -1879,7 +1950,13 @@ window.onload = async () => {
             
             appState = { ...appState, ...savedState, settings: { ...appState.settings, ...savedState.settings } };
         }
+        
+        // 开机时静默把数据库的庞大Base64转化成短指针
+        if (appState.settings.customFont) {
+            window.activeFontBlobUrl = getFontBlobUrl(appState.settings.customFont);
+        }
         applySettingsToUI(); renderMessages(); renderStickers(); updateDelayDisplay();
+        
     } catch (e) { 
         applySettingsToUI(); updateDelayDisplay(); 
     } finally { 
@@ -1996,14 +2073,26 @@ function updateStatusEmoji() {
 
 function rebuildThemeCSS() {
     let finalCSS = "";
-    if (appState.settings.customFont) { finalCSS += `@font-face { font-family: 'CustomThemeFont'; src: url('${appState.settings.customFont}'); } * { font-family: 'CustomThemeFont', sans-serif !important; } `; } else if (appState.settings.fontUrl) { finalCSS += `@font-face { font-family: 'CustomThemeFont'; src: url('${appState.settings.fontUrl}'); } * { font-family: 'CustomThemeFont', sans-serif !important; } `; }
+    
+    // 核心优化：只给 CSS 喂极短的虚拟指针 URL，绝不塞入 Base64 长文本
+    let fontSrc = "";
+    if (window.activeFontBlobUrl) {
+        fontSrc = window.activeFontBlobUrl;
+    } else if (appState.settings.customFont) {
+        window.activeFontBlobUrl = getFontBlobUrl(appState.settings.customFont);
+        fontSrc = window.activeFontBlobUrl;
+    } else if (appState.settings.fontUrl) {
+        fontSrc = appState.settings.fontUrl;
+    }
+
+    if (fontSrc) { 
+        finalCSS += `@font-face { font-family: 'CustomThemeFont'; src: url('${fontSrc}'); font-display: swap; } * { font-family: 'CustomThemeFont', sans-serif !important; } `; 
+    }
     
     if (appState.settings.bubbleCSS) { finalCSS += `.bubble { ${appState.settings.bubbleCSS} } `; }
     
-    // 1. 先把主题自带的 CSS 放进来
     finalCSS += appState.settings.customCSS || ""; 
     
-    // 2. 把你的自定义壁纸放到最后，并且增加暗黑模式的选择器，确保神挡杀神佛挡杀佛！
     if (appState.settings.chatWallpaper) {
         if(appState.settings.chatWallpaper.startsWith('#')) {
             finalCSS += `.chat-area, body.dark-mode .chat-area { background: ${appState.settings.chatWallpaper} !important; } `;
@@ -2040,6 +2129,8 @@ document.getElementById('set-min-delay').value = appState.settings.minDelaySec |
     document.getElementById('set-read-no-reply').checked = !!appState.settings.allowReadNoReply;
 document.getElementById('set-auto-call').checked = !!appState.settings.allowAutoCall;
 document.getElementById('set-custom-emojis').value = appState.settings.customEmojis || "";
+
+const cpEl = document.getElementById('set-custom-pats'); if(cpEl) cpEl.value = appState.settings.customPats || "";
 
 const chkKeepAlive = document.getElementById('set-keep-alive'); if(chkKeepAlive) chkKeepAlive.checked = !!appState.settings.keepAlive;
 const chkAiAutoSend = document.getElementById('set-ai-auto-send'); if(chkAiAutoSend) chkAiAutoSend.checked = !!appState.settings.aiAutoSend;
@@ -2095,6 +2186,9 @@ appState.settings.allowSound = document.getElementById('set-allow-sound').checke
 appState.settings.aiAutoTime = document.getElementById('set-ai-auto-time').value;
     
     appState.settings.customEmojis = document.getElementById('set-custom-emojis').value;
+    
+    const cpEl = document.getElementById('set-custom-pats'); if(cpEl) appState.settings.customPats = cpEl.value;
+    
         const toggleEmoji = document.getElementById('set-status-emoji-enable');
     if(toggleEmoji) appState.settings.enableStatusEmoji = toggleEmoji.checked;
     applySettingsToUI(); saveState();
@@ -2424,8 +2518,34 @@ function pushCallMessage(text) {
 function openGameModal() { document.getElementById('game-modal').classList.add('open'); } function closeGameModal() { document.getElementById('game-modal').classList.remove('open'); }
 function openThemeModal() { document.getElementById('theme-modal').classList.add('open'); } function closeThemeModal() { document.getElementById('theme-modal').classList.remove('open'); }
 async function applyFontUrl() { const url = document.getElementById('font-url-input').value.trim(); if (url) { appState.settings.fontUrl = url; appState.settings.customFont = ""; rebuildThemeCSS(); saveState(); await uiAlert("✅ 字体链接已应用"); } }
-function uploadFont(e) { if(!e.target.files[0]) return; const reader = new FileReader(); reader.onload = async (ev) => { appState.settings.customFont = ev.target.result; appState.settings.fontUrl = ""; document.getElementById('font-url-input').value = ""; rebuildThemeCSS(); saveState(); await uiAlert("✅ 字体导入成功"); }; reader.readAsDataURL(e.target.files[0]); }
-async function clearFont() { appState.settings.customFont = ""; appState.settings.fontUrl = ""; document.getElementById('font-url-input').value = ""; rebuildThemeCSS(); saveState(); await uiAlert("已恢复默认字体"); }
+
+function uploadFont(e) { 
+    const file = e.target.files[0];
+    if(!file) return; 
+    window.activeFontBlobUrl = URL.createObjectURL(file);
+    appState.settings.fontUrl = ""; 
+    document.getElementById('font-url-input').value = ""; 
+    rebuildThemeCSS(); 
+    uiAlert("✅ 字体已应用！\n(后台正在慢慢保存大文件，不影响你马上使用。请等待几秒后再刷新网页)");
+    const reader = new FileReader(); 
+    reader.onload = async (ev) => { 
+        appState.settings.customFont = ev.target.result; 
+        saveState(); 
+    }; 
+    reader.readAsDataURL(file); 
+    e.target.value = '';
+}
+
+async function clearFont() { 
+    appState.settings.customFont = ""; 
+    appState.settings.fontUrl = ""; 
+    window.activeFontBlobUrl = null; 
+    document.getElementById('font-url-input').value = ""; 
+    rebuildThemeCSS(); 
+    saveState(); 
+    await uiAlert("已恢复默认字体"); 
+}
+
 async function uploadWallpaper(e) { if(!e.target.files[0]) return; appState.settings.chatWallpaper = await compressImage(e.target.files[0], 1080); rebuildThemeCSS(); saveState(); await uiAlert("✅ 聊天壁纸已应用"); e.target.value=''; }
 async function clearWallpaper() { appState.settings.chatWallpaper = ""; rebuildThemeCSS(); saveState(); await uiAlert("已恢复默认壁纸"); }
 document.getElementById('me-avatar-upload').onchange = async (e) => { if(e.target.files[0]) { appState.settings.meAvatar = await compressImage(e.target.files[0], 200); applySettingsToUI(); saveState(); renderMessages(); } e.target.value = ''; };
@@ -2622,6 +2742,30 @@ function renderMessages(keepScroll = false, exactHold = false) {
 
 function updateMultiSelectCount() { const count = document.querySelectorAll('.msg-checkbox:checked').length; document.getElementById('multi-select-count').innerText = count; }
 
+window.triggerPat = function(target) {
+    const meName = appState.settings.meName || '我';
+    
+    const customPatsStr = appState.settings.customPats || "";
+    let pats = customPatsStr.split('\n').map(s=>s.trim()).filter(s=>s!=="");
+    
+    // 从你填的词库里抽一句（没填就给个默认提示）
+    let suffix = pats.length > 0 ? pats[Math.floor(Math.random() * pats.length)] : "拍了拍对方";
+    
+    // 极致纯净：只把“我”的名字和你填的话拼在一起，中间加个空格
+    let text = `${meName}${suffix}`;
+    
+    let html = `<div style="text-align:center; font-size:11px; color:var(--text-sub); margin: 8px 0; font-weight:300;">${text}</div>`;
+    
+    addMessage({ id: Date.now(), text: html, type: 'system', sender: 'system', time: Date.now(), quoteText: null, isRead: false });
+    
+    if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
+
+    // 重点：像发普通消息一样，触发 Ta 的回复机制！
+    if (!document.body.classList.contains('multi-select-mode')) {
+        if (!isStackMode) triggerAutoReply(); 
+    }
+};
+
 // ✅ 渲染气泡节点，支持 text、img、以及 text+img 的 mix 混合类型
 function appendMessageDOM(msg, area) {
     const role = getCurrentRole();
@@ -2655,8 +2799,21 @@ function appendMessageDOM(msg, area) {
     
     const cb = document.createElement('input'); cb.type = 'checkbox'; cb.className = 'msg-checkbox'; cb.value = msg.id; cb.onchange = updateMultiSelectCount;
     const avatar = document.createElement('img'); avatar.className = 'bubble-avatar';
-    avatar.src = msg.sender === 'me' ? (appState.settings.meAvatar || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7') : (role.avatar || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
-    avatar.addEventListener('click', (e) => { if(document.body.classList.contains('multi-select-mode')) return; showContextMenu(e, msg); });
+avatar.src = msg.sender === 'me' ? (appState.settings.meAvatar || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7') : (role.avatar || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
+
+let avatarLastTap = 0;
+avatar.addEventListener('touchstart', (e) => {
+    const currentTime = Date.now();
+    // 如果两次点击间隔小于 300 毫秒，判定为“拍了拍”
+    if (currentTime - avatarLastTap < 300) {
+        e.preventDefault();
+        if(document.body.classList.contains('multi-select-mode')) return; 
+        window.triggerPat(msg.sender);
+    }
+    avatarLastTap = currentTime;
+}, {passive: false});
+
+
 
     const bubble = document.createElement('div'); bubble.className = 'bubble';
 
@@ -2900,81 +3057,118 @@ function triggerAutoReply() {
     let pool = [...validCards, ...validStickers];
     if(pool.length === 0) pool = [{ text: "嗯嗯", type: 'text' }];
 
+    const customPatsStr = appState.settings.customPats || "";
+    let pats = customPatsStr.split('\n').map(s=>s.trim()).filter(s=>s!=="");
+    // 自动清理多余字眼，只保留部位
+    
+
     const readDelay = Math.random() * 1500 + 500;
     
     setTimeout(() => {
-    markMyMessagesAsRead(); 
+        markMyMessagesAsRead(); 
 
-    if (appState.settings.allowReadNoReply && Math.random() < 0.20) {
-        return; 
-    }
+        if (appState.settings.allowReadNoReply && Math.random() < 0.20) {
+            return; 
+        }
 
-    // 👇新增：消息触发的“嫌打字麻烦”机制 (比如 5% 概率) 👇
-    if (appState.settings.allowAutoCall && Math.random() < 0.015) {
-        triggerIncomingCall();
-        return; // 触发打电话后，就不发文字消息了
-    }
-    // 👆新增结束👆
+        if (appState.settings.allowAutoCall && Math.random() < 0.015) {
+            triggerIncomingCall();
+            return; 
+        }
 
-    const minMs = (appState.settings.minDelaySec || 2) * 1000; 
-    const maxMs = (appState.settings.maxDelaySec || 6) * 1000;
+        const minMs = (appState.settings.minDelaySec || 2) * 1000; 
+        const maxMs = (appState.settings.maxDelaySec || 6) * 1000;
         let maxCount = appState.settings.maxReplyCount || 1; 
-let count = 1;
-if (maxCount > 1) {
-    let weights = [];
-    // 分配权重：只比基础概率稍微高一点点，缓慢递减
-    for (let i = 1; i <= maxCount; i++) {
-        if (i === 1) weights.push(18);       // 1条最高
-        else if (i === 2) weights.push(15);  // 2条稍微递减
-        else if (i === 3) weights.push(12);  // 3条再递减一点
-        else weights.push(10);               // 4条及以上的保底基础概率
-    }
-    let totalW = weights.reduce((a, b) => a + b, 0);
-    let r = Math.random() * totalW;
-    for (let i = 0; i < maxCount; i++) {
-        if (r < weights[i]) { count = i + 1; break; }
-        r -= weights[i];
-    }
-}
-        let baseDelay = Math.max(minMs, Math.random() * (maxMs - minMs) + minMs);
+        let count = 1;
+        if (maxCount > 1) {
+            let weights = [];
+            for (let i = 1; i <= maxCount; i++) {
+                if (i === 1) weights.push(18);       
+                else if (i === 2) weights.push(15);  
+                else if (i === 3) weights.push(12);  
+                else weights.push(10);               
+            }
+            let totalW = weights.reduce((a, b) => a + b, 0);
+            let r = Math.random() * totalW;
+            for (let i = 0; i < maxCount; i++) {
+                if (r < weights[i]) { count = i + 1; break; }
+                r -= weights[i];
+            }
+        }
         
+        let baseDelay = Math.max(minMs, Math.random() * (maxMs - minMs) + minMs);
         pendingRepliesCount += count; 
         showTyping(); 
 
         for(let i = 0; i < count; i++) {
             let currentDelay = baseDelay + i * (Math.random() * 1800 + 800); 
             setTimeout(() => {
-                const randomItem = pool[Math.floor(Math.random() * pool.length)];
-                let itemToSent = { ...randomItem };
-
-                const customEmojisStr = appState.settings.customEmojis || "";
-                const emojis = customEmojisStr.split(/[\s\n]+/).filter(e => e.trim() !== "");
+                let randomItem;
+                const randChance = Math.random();
                 
-                // Emoji 混入逻辑
-                if (itemToSent.type === 'text' && emojis.length > 0 && Math.random() < 0.20) {
-                    const emj = emojis[Math.floor(Math.random() * emojis.length)];
-                    if (Math.random() < 0.5) itemToSent.text = itemToSent.text + " " + emj;
-                    else itemToSent.text = emj + " " + itemToSent.text;
+                // 🌟 独立概率判定：8% 掉落拍一拍，3% 掉落扭蛋，89% 正常发字卡
+                if (pats.length > 0 && randChance < 0.08) {
+                    randomItem = { type: 'sys_pat' };
+                } else if (randChance >= 0.08 && randChance < 0.11) {
+                    randomItem = { type: 'sys_gacha' };
+                } else {
+                    randomItem = pool[Math.floor(Math.random() * pool.length)];
                 }
-
-                // ✅ 混合气泡(图文同框)逻辑：如果抽到的是纯文字，有20%的概率顺带抽一张图片放进气泡里
-                let imgToMix = null;
-                if (itemToSent.type === 'text' && validStickers.length > 0 && Math.random() < 0.20) {
-                    const randomSticker = validStickers[Math.floor(Math.random() * validStickers.length)];
-                    itemToSent.type = 'mix'; // 类型变更为 mix（图文混排）
-                    imgToMix = randomSticker.text; // 将抽取到的图片链接存入 img 字段
+                
+// --- 抽到了【拍一拍动作】 ---
+if (randomItem.type === 'sys_pat') {
+    const taName = role.name || 'Ta';
+    const suffix = pats.length > 0 ? pats[Math.floor(Math.random() * pats.length)] : "拍了拍我";
+    
+    // 极致纯净：只把“Ta”的名字和你填的话拼在一起
+    const html = `<div style="text-align:center; font-size:11px; color:var(--text-sub); margin: 8px 0; font-weight:300;">${taName}${suffix}</div>`;
+    
+    addMessage({ id: Date.now() + Math.random(), text: html, type: 'system', sender: 'system', time: Date.now(), quoteText: null, isRead: false });
+}
+                // --- 抽到了【话题扭蛋】 ---
+                else if (randomItem.type === 'sys_gacha') {
+                    const topic = gachaTopics[Math.floor(Math.random() * gachaTopics.length)];
+                    const html = `<div class="tarot-share-card" style="width: 220px;">
+                        <div class="tarot-share-header" style="background:#333;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="8" width="18" height="14" rx="2"></rect><path d="M12 5a3 3 0 1 0-3 3"></path><path d="M12 5a3 3 0 1 1 3 3"></path></svg>
+                            <span>话题扭蛋</span>
+                        </div>
+                        <div class="tarot-share-content" style="padding: 16px 12px; font-size: 13px; font-weight: bold; text-align: center; color: var(--text-main); line-height: 1.5;">
+                            ${topic}
+                        </div>
+                    </div>`;
+                    addMessage({ id: Date.now() + Math.random(), text: html, type: 'tarot', sender: 'them', time: Date.now(), quoteText: null, isRead: false });
                 }
+                // --- 抽到了普通字卡或表情 ---
+                else {
+                    let itemToSent = { ...randomItem };
+                    const customEmojisStr = appState.settings.customEmojis || "";
+                    const emojis = customEmojisStr.split(/[\s\n]+/).filter(e => e.trim() !== "");
+                    
+                    if (itemToSent.type === 'text' && emojis.length > 0 && Math.random() < 0.20) {
+                        const emj = emojis[Math.floor(Math.random() * emojis.length)];
+                        if (Math.random() < 0.5) itemToSent.text = itemToSent.text + " " + emj;
+                        else itemToSent.text = emj + " " + itemToSent.text;
+                    }
 
-                addMessage({ 
-                    id: Date.now() + Math.random(), 
-                    text: itemToSent.text, 
-                    type: itemToSent.type, 
-                    img: imgToMix, 
-                    sender: 'them', 
-                    time: Date.now(), 
-                    quoteText: null, 
-                    isRead: false 
-                }); 
+                    let imgToMix = null;
+                    if (itemToSent.type === 'text' && validStickers.length > 0 && Math.random() < 0.20) {
+                        const randomSticker = validStickers[Math.floor(Math.random() * validStickers.length)];
+                        itemToSent.type = 'mix'; 
+                        imgToMix = randomSticker.text; 
+                    }
+
+                    addMessage({ 
+                        id: Date.now() + Math.random(), 
+                        text: itemToSent.text, 
+                        type: itemToSent.type, 
+                        img: imgToMix, 
+                        sender: 'them', 
+                        time: Date.now(), 
+                        quoteText: null, 
+                        isRead: false 
+                    }); 
+                }
                 
                 pendingRepliesCount--; 
                 if (pendingRepliesCount <= 0) { pendingRepliesCount = 0; hideTyping(); scrollToBottom(); }
@@ -2995,9 +3189,17 @@ function confirmExportData() {
     checkedBoxes.forEach(cb => {
         const key = cb.value;
         if(appState[key] !== undefined) {
-            exportObj[key] = appState[key];
+            // 深拷贝一份数据，避免污染当前运行的程序
+            exportObj[key] = JSON.parse(JSON.stringify(appState[key]));
         }
     });
+    
+    // 【新增：给备份文件“瘦身”】剔除体积巨大的自定义字体和壁纸
+    if (exportObj.settings) {
+        delete exportObj.settings.customFont;
+        delete exportObj.settings.chatWallpaper;
+    }
+    
     // 如果导出了角色，顺带把当前选中的角色ID带上
     if(exportObj.roles) exportObj.currentRoleId = appState.currentRoleId;
     
@@ -4192,11 +4394,12 @@ function playGacha() {
         statusText.innerText = "掉落了一个扭蛋！";
         machine.classList.remove('animating');
         
+        // 正确读取：内置的 gachaTopics 数组
         currentGachaTopic = gachaTopics[Math.floor(Math.random() * gachaTopics.length)];
         topicText.innerText = currentGachaTopic;
         
         setTimeout(() => {
-            statusText.style.display = 'none'; // 强制隐藏
+            statusText.style.display = 'none'; 
             resultArea.style.display = 'block'; 
             gachaIsRolling = false;
         }, 800);
@@ -5993,6 +6196,194 @@ function openWishModal() {
     renderWishes();
 }
 function closeWishModal() { document.getElementById('wish-modal').classList.remove('open'); }
+
+function openPiggyBankModal() {
+    closeGameModal();
+    if(!appState.piggyBank) appState.piggyBank = { name: '点击设置存钱目标...', target: 0, current: 0, records: [] };
+    if(!appState.piggyBank.records) appState.piggyBank.records = []; // 兼容旧数据
+    document.getElementById('piggy-bank-modal').classList.add('open');
+    renderPiggyBank();
+}
+function closePiggyBankModal() { document.getElementById('piggy-bank-modal').classList.remove('open'); }
+
+async function editPiggyBank() {
+    const name = await uiPrompt("给存钱罐起个名字吧：", "存钱罐设置", "例如：旅游基金");
+    if(!name) return;
+    const targetStr = await uiPrompt("目标金额是多少？", "设置目标");
+    if(!targetStr) return;
+    
+    // 这里也改成了 parseFloat 支持小数目标
+    const target = parseFloat(targetStr);
+    if(isNaN(target) || target <= 0) { showToast("金额无效哦"); return; }
+    
+    if(!appState.piggyBank) appState.piggyBank = { current: 0, records: [] };
+    appState.piggyBank.name = name;
+    appState.piggyBank.target = Math.round(target * 100) / 100;
+    saveState(); renderPiggyBank();
+}
+
+function renderPiggyBank() {
+    const pb = appState.piggyBank;
+    document.getElementById('pb-name').innerText = pb.name || '点击设置目标...';
+    document.getElementById('pb-status').innerText = `${pb.current} / ${pb.target || 0}`;
+    const pct = pb.target > 0 ? Math.min(100, (pb.current / pb.target) * 100) : 0;
+    document.getElementById('pb-bar').style.width = pct + '%';
+    
+    // 如果达标，记录达成日期
+    if(pct >= 100) {
+        document.getElementById('pb-bar').style.background = '#4CAF50';
+        if(!pb.finishDate) pb.finishDate = getLocalYMD(new Date()); 
+    } else {
+        document.getElementById('pb-bar').style.background = 'var(--text-main)';
+        pb.finishDate = null;
+    }
+
+    const list = document.getElementById('pb-records-area');
+    list.innerHTML = "";
+    
+    if(pb.finishDate) {
+        list.innerHTML += `<div style="text-align:center; color:#4CAF50; font-weight:bold; font-size:13px; margin-bottom:16px;">🎉 已于 ${pb.finishDate} 达成存钱目标！</div>`;
+    }
+    
+    if(!pb.records || pb.records.length === 0) {
+        list.innerHTML += '<div style="text-align:center; color:var(--text-sub); font-size:12px; margin-top:20px;">还没开始存钱呢</div>';
+        return;
+    }
+    
+    // 按日期分组 (日历流水账模式)
+    const grouped = {};
+    pb.records.forEach(r => {
+        const d = new Date(r.time);
+        const dateKey = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        if(!grouped[dateKey]) grouped[dateKey] = { total: 0, items: [] };
+        grouped[dateKey].total += r.amount;
+        grouped[dateKey].items.push(r);
+    });
+
+    // 倒序排列日期
+    const sortedDates = Object.keys(grouped).sort((a,b) => new Date(b) - new Date(a));
+
+    sortedDates.forEach(date => {
+        const group = grouped[date];
+        
+        // 【关键修改】：处理今日总计的精度问题
+        const dailyTotal = Math.round(group.total * 100) / 100;
+        
+        // 渲染每一天的表头
+        const dayHeader = document.createElement('div');
+        dayHeader.style.cssText = "font-size:13px; font-weight:bold; color:var(--text-main); margin:16px 0 8px 0; border-bottom:1px dashed var(--line-light); padding-bottom:6px; display:flex; justify-content:space-between;";
+        dayHeader.innerHTML = `<span>📅 ${date}</span><span style="color:#07c160; font-family:monospace;">今日共存: +${dailyTotal}</span>`;
+        list.appendChild(dayHeader);
+
+        // 渲染当天的所有记录
+        group.items.sort((a,b) => b.time - a.time).forEach(r => {
+            const d = new Date(r.time);
+            const timeStr = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+            const memoHtml = r.memo ? `<div style="font-size:12px; color:var(--text-main); margin-top:6px; font-weight:bold;">📝 附言: ${r.memo}</div>` : '';
+            // 显示专属字卡回复
+            const replyHtml = r.reply ? `<div style="font-size:11px; color:var(--text-sub); margin-top:6px; background:#fafafa; padding:8px; border-radius:4px; border:1px solid var(--line-light);">💭 Ta的回应: ${r.reply}</div>` : '';
+            
+            const item = document.createElement('div');
+            item.style.cssText = "border:1px solid var(--line-color); padding:12px; margin-bottom:10px; box-shadow:2px 2px 0 var(--line-light); background:#fff;";
+            item.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div style="flex:1;">
+                        <div style="font-weight:bold; color:var(--text-main); font-size:15px; font-family:monospace;">+ ${r.amount} 元</div>
+                        ${memoHtml}
+                        ${replyHtml}
+                    </div>
+                    <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                        <span style="font-size:10px; color:var(--text-sub);">${timeStr}</span>
+                        <button class="btn-noshadow icon-btn" style="color:#d32f2f; border:none; padding:0; height:auto; margin-top:16px; box-shadow:none; font-size:11px;" onclick="deletePiggyRecord(${r.id})">撤销</button>
+                    </div>
+                </div>
+            `;
+            list.appendChild(item);
+        });
+    });
+}
+
+async function addPiggyMoney() {
+    if(!appState.piggyBank || !appState.piggyBank.target) { showToast("请先点击上方设置目标！"); return; }
+    const addStr = await uiPrompt("这次存入多少钱？", "记账入库");
+    if(!addStr) return;
+    
+    // 【关键修改】：改为 parseFloat 支持小数
+    const add = parseFloat(addStr);
+    if(isNaN(add) || add <= 0) { showToast("金额无效哦"); return; }
+    
+    const memo = await uiPrompt("给这笔账记个附言吧 (选填)：", "记账附言", "例如：今天忍住没喝奶茶");
+    
+    // --- 抽取随机字卡作为专属回复 ---
+    let replyText = "收到啦，继续加油！";
+    const role = getCurrentRole();
+    const validCards = appState.cards.filter(c => role.allowedCardGroups.includes(c.group));
+    if(validCards.length > 0) {
+        replyText = validCards[Math.floor(Math.random() * validCards.length)].text;
+    }
+    
+    if(!appState.piggyBank.records) appState.piggyBank.records = [];
+    appState.piggyBank.records.push({ id: Date.now(), amount: add, memo: memo || '', time: Date.now(), reply: replyText });
+    
+    // 【关键修改】：解决 JS 小数加法精度问题，强制保留最多两位小数
+    appState.piggyBank.current = Math.round((appState.piggyBank.current + add) * 100) / 100;
+    
+    saveState(); renderPiggyBank();
+    showToast("记账成功！");
+
+    if(Math.random() < 0.30) {
+        setTimeout(() => {
+            let chatReply = validCards.length > 0 ? validCards[Math.floor(Math.random() * validCards.length)].text : "存钱罐收到一笔钱啦！";
+            addMessage({ id: Date.now() + Math.random(), text: chatReply, type: 'text', sender: 'them', time: Date.now(), quoteText: null, isRead: false });
+        }, 1500 + Math.random() * 1500); 
+    }
+
+    if(appState.piggyBank.current >= appState.piggyBank.target && (appState.piggyBank.current - add) < appState.piggyBank.target) {
+        setTimeout(() => showToast("🎉 太棒了！你们的存钱罐目标已达成！"), 500);
+    }
+}
+
+function deletePiggyRecord(id) {
+    uiConfirm("撤销这笔记录会扣除对应的金额，确定吗？").then(res => {
+        if(res) {
+            const idx = appState.piggyBank.records.findIndex(r => r.id === id);
+            if(idx !== -1) {
+                appState.piggyBank.current -= appState.piggyBank.records[idx].amount;
+                // 【关键修改】：解决 JS 小数减法精度问题
+                appState.piggyBank.current = Math.round(appState.piggyBank.current * 100) / 100;
+                
+                if(appState.piggyBank.current < 0) appState.piggyBank.current = 0;
+                appState.piggyBank.records.splice(idx, 1);
+                saveState(); renderPiggyBank();
+            }
+        }
+    });
+}
+
+function sharePiggyBank() {
+    if(!appState.piggyBank || !appState.piggyBank.target) return;
+    const pb = appState.piggyBank;
+    const pct = Math.min(100, Math.floor((pb.current / pb.target) * 100));
+    const html = `<div class="tarot-share-card" style="width: 200px;">
+        <div class="tarot-share-header" style="background:var(--text-main);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2"></circle></svg>
+            <span>共同存钱罐</span>
+        </div>
+        <div class="tarot-share-content" style="padding: 12px; font-size: 13px; color: var(--text-main); line-height: 1.6;">
+            <div style="font-weight:bold; margin-bottom:8px;">${pb.name}</div>
+            <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px; font-family:monospace;">
+                <span>已存:${pb.current}</span>
+                <span>目标:${pb.target}</span>
+            </div>
+            <div style="height: 8px; border: 1px solid var(--line-color); background: #fafafa; margin-bottom: 6px;">
+                <div style="height: 100%; width: ${pct}%; background: ${pct>=100 ? '#4CAF50' : 'var(--text-main)'};"></div>
+            </div>
+            <div style="text-align:right; font-size:10px; font-weight:bold;">当前进度 ${pct}%</div>
+        </div>
+    </div>`;
+    addMessage({ id: Date.now(), text: html, type: 'tarot', sender: 'me', time: Date.now(), quoteText: null, isRead: false });
+    closePiggyBankModal();
+}
 
 function addWish() {
     const input = document.getElementById('wish-input');
