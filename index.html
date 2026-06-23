@@ -3054,13 +3054,12 @@ function triggerAutoReply() {
     let validCards = appState.cards.filter(c => role.allowedCardGroups.includes(c.group)).map(c => ({ text: c.text, type: 'text' }));
     let validStickers = appState.stickers.filter(s => role.allowedStickerGroups.includes(s.group)).map(s => ({ text: s.url, type: 'img' }));
     
-    let pool = [...validCards, ...validStickers];
-    if(pool.length === 0) pool = [{ text: "嗯嗯", type: 'text' }];
-
     const customPatsStr = appState.settings.customPats || "";
-    let pats = customPatsStr.split('\n').map(s=>s.trim()).filter(s=>s!=="");
-    // 自动清理多余字眼，只保留部位
-    
+let pats = customPatsStr.split('\n').map(s=>s.trim()).filter(s=>s!=="");
+
+let patItems = pats.map(p => ({ text: p, type: 'sys_pat' }));
+let pool = [...validCards, ...validStickers, ...patItems];
+if(pool.length === 0) pool = [{ text: "嗯嗯", type: 'text' }];
 
     const readDelay = Math.random() * 1500 + 500;
     
@@ -3103,26 +3102,21 @@ function triggerAutoReply() {
         for(let i = 0; i < count; i++) {
             let currentDelay = baseDelay + i * (Math.random() * 1800 + 800); 
             setTimeout(() => {
-                let randomItem;
-                const randChance = Math.random();
-                
-                // 🌟 独立概率判定：8% 掉落拍一拍，3% 掉落扭蛋，89% 正常发字卡
-                if (pats.length > 0 && randChance < 0.08) {
-                    randomItem = { type: 'sys_pat' };
-                } else if (randChance >= 0.08 && randChance < 0.11) {
-                    randomItem = { type: 'sys_gacha' };
-                } else {
-                    randomItem = pool[Math.floor(Math.random() * pool.length)];
-                }
-                
+let randomItem;
+const randChance = Math.random();
+
+if (randChance < 0.03) {
+    randomItem = { type: 'sys_gacha' };
+} else {
+    randomItem = pool[Math.floor(Math.random() * pool.length)];
+}
+
 // --- 抽到了【拍一拍动作】 ---
 if (randomItem.type === 'sys_pat') {
     const taName = role.name || 'Ta';
-    const suffix = pats.length > 0 ? pats[Math.floor(Math.random() * pats.length)] : "拍了拍我";
+    let suffix = randomItem.text.replace(/你|他|她|Ta/gi, '我'); 
     
-    // 极致纯净：只把“Ta”的名字和你填的话拼在一起
-    const html = `<div style="text-align:center; font-size:11px; color:var(--text-sub); margin: 8px 0; font-weight:300;">${taName}${suffix}</div>`;
-    
+    const html = `<div style="text-align:center; font-size:11px; color:var(--text-sub); margin: 8px 0; font-weight:300;">${taName} ${suffix}</div>`;
     addMessage({ id: Date.now() + Math.random(), text: html, type: 'system', sender: 'system', time: Date.now(), quoteText: null, isRead: false });
 }
                 // --- 抽到了【话题扭蛋】 ---
