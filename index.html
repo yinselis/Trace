@@ -857,6 +857,24 @@ body.time-style-top .message-wrap { margin-top: 18px !important; }
         </div>
         <div class="modal-body" style="padding: 16px; display: flex; flex-direction: column;">
             
+                        <!-- 网易云账号操作区 (已修复排版) -->
+            <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px dashed var(--line-light);">
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-noshadow icon-btn" style="flex: 1; font-size: 12px; border: 1px solid var(--line-color);" onclick="startQrLogin()">扫码登录</button>
+                    <button class="btn-noshadow icon-btn" style="flex: 1; font-size: 12px; border: 1px solid var(--line-color); background: var(--text-main); color: #fff;" onclick="loadMyPlaylists()">我的歌单</button>
+                </div>
+                
+                <!-- 登录二维码显示框 -->
+                <div id="qr-login-box" style="display: none; margin-top: 10px; border: 1px dashed var(--line-color); padding: 10px; background: #fafafa; text-align: center;">
+                    <img id="qr-img" src="" style="width: 150px; height: 150px; margin: 0 auto; display: block; border: 1px solid var(--line-color);">
+                    <div id="qr-status" style="font-size: 12px; color: var(--text-main); margin-top: 8px; font-weight: bold;">请使用网易云APP扫码</div>
+                </div>
+
+                <!-- 个人歌单列表显示框 -->
+                <div id="my-playlists-box" style="display: none; margin-top: 10px; max-height: 200px; overflow-y: auto; border: 1px solid var(--line-color); padding: 8px; background: var(--bg);">
+                </div>
+            </div>
+            
             <div style="font-size: 11px; color: var(--text-sub); margin-bottom: 12px; line-height: 1.5; font-weight: 300;">
                 支持输入 <span style="font-weight:bold; color:var(--text-main);">网易云单曲ID</span> 或 <span style="font-weight:bold; color:var(--text-main);">.mp3直链</span><br>
                 (例如网易云分享链接里有 id=123456，只需填 123456)
@@ -6656,7 +6674,7 @@ setInterval(() => {
 
 /* ================= 更新日志悬浮球引擎 ================= */
 // 💡 以后每次更新了新功能，只需要把这里的 'v1.0' 改成 'v1.1'、'v1.2'... 悬浮球就会再次出现！
-const CURRENT_APP_VERSION = 'v1.3'; 
+const CURRENT_APP_VERSION = 'v1.4'; 
 
 setTimeout(() => {
     const updateBall = document.getElementById('update-float-ball');
@@ -6706,7 +6724,7 @@ setTimeout(() => {
         
         // 3. 如果只是点击（没有滑动），则打开更新日志
         if(!ubHasMoved) {
-            const logText = "如果你看到了这个悬浮球，代表更新成功\n\n本次新增：\n1. 词库新增文本搜索功能，方便快速筛查与删除\n2. 视觉呈现面板新增「更换头像」快捷按钮\n\n(◍ ´꒳` ◍)\n本字卡网站关于聊天概率部分参考了小红书@milk 老师 非常感谢！\n代码都是gemini写的bug很多\n请勿二传商用，非常感谢";
+            const logText = "如果你看到了这个悬浮球，代表更新成功\n\n本次新增：\n1. 网易云扫码登陆\n\n(◍ ´꒳` ◍)\n本字卡网站关于聊天概率部分参考了小红书@milk 老师 非常感谢！\n代码都是gemini写的bug很多\n请勿二传商用，非常感谢";
             
             uiAlert(logText, "Trace 更新成功").then(() => {
                 // 点击确定后，永久隐藏并记录当前版本号
@@ -6718,6 +6736,161 @@ setTimeout(() => {
         }
     });
 }, 1000); // 延迟 1 秒加载，避开开屏动画
+
+/* ================= 网易云扫码登录专属逻辑 ================= */
+let qrCheckTimer = null;
+const MY_API_BASE = "https://api-enhanced-pi-coral.vercel.app"; // 你的专属 API 网址
+
+async function startQrLogin() {
+    const box = document.getElementById('qr-login-box');
+    const img = document.getElementById('qr-img');
+    const statusText = document.getElementById('qr-status');
+    
+    box.style.display = 'block';
+    img.style.display = 'block';
+    statusText.innerText = "正在向云端申请二维码...";
+    img.src = ""; // 清空旧图
+    if (qrCheckTimer) clearInterval(qrCheckTimer); // 清理旧定时器
+
+    try {
+        // 1. 获取登录钥匙 (unikey)
+        const keyRes = await fetch(`${MY_API_BASE}/login/qr/key?timerstamp=${Date.now()}`);
+        const keyData = await keyRes.json();
+        const unikey = keyData.data.unikey;
+
+        // 2. 用钥匙生成二维码图片
+        const qrRes = await fetch(`${MY_API_BASE}/login/qr/create?key=${unikey}&qrimg=true&timerstamp=${Date.now()}`);
+        const qrData = await qrRes.json();
+        img.src = qrData.data.qrimg; // 把拿到的图片填进去
+        statusText.innerText = "请打开网易云音乐APP扫一扫";
+
+        // 3. 开始每隔 3 秒去问一次网易云：“Ta扫了没？Ta扫了没？”
+        qrCheckTimer = setInterval(() => checkQrStatus(unikey), 3000);
+
+    } catch (error) {
+        statusText.innerText = "获取失败，可能是网络问题";
+    }
+}
+
+async function checkQrStatus(unikey) {
+    const statusText = document.getElementById('qr-status');
+    try {
+        const checkRes = await fetch(`${MY_API_BASE}/login/qr/check?key=${unikey}&timerstamp=${Date.now()}`);
+        const checkData = await checkRes.json();
+
+        if (checkData.code === 800) {
+            statusText.innerText = "二维码已过期，请重新点击登录";
+            clearInterval(qrCheckTimer);
+        } else if (checkData.code === 802) {
+            statusText.innerText = "扫描成功！请在手机上点击确认授权";
+        } else if (checkData.code === 803) {
+            // 803 代表登录大获成功！
+            clearInterval(qrCheckTimer);
+            statusText.innerText = "登录成功啦！🎉";
+            document.getElementById('qr-img').style.display = 'none';
+            
+            // 【最重要的一步】：把网易云给你的通行证(Cookie)偷偷存在手机里
+            localStorage.setItem('netease_cookie', checkData.cookie);
+            
+            showToast("网易云登录成功！现在可以听VIP歌曲啦");
+            setTimeout(() => {
+                document.getElementById('qr-login-box').style.display = 'none';
+            }, 3000);
+        }
+    } catch (error) {
+        console.error("检查状态失败", error);
+    }
+}
+
+/* ================= 加载个人歌单逻辑 ================= */
+async function loadMyPlaylists() {
+    const cookie = localStorage.getItem('netease_cookie');
+    if (!cookie) {
+        showToast("请先扫码登录哦");
+        return;
+    }
+    
+    const box = document.getElementById('my-playlists-box');
+    box.style.display = 'block';
+    box.innerHTML = '<div style="font-size:12px; text-align:center; color:var(--text-sub);">正在潜入网易云获取你的歌单...</div>';
+
+    try {
+        // 1. 拿着通行证去查你的账号 ID (uid)
+        const accRes = await fetch(`${MY_API_BASE}/user/account?cookie=${encodeURIComponent(cookie)}&timerstamp=${Date.now()}`);
+        const accData = await accRes.json();
+        
+        if (!accData.profile) {
+            box.innerHTML = '<div style="font-size:12px; text-align:center; color:#d32f2f;">登录已过期，请重新扫码登录</div>';
+            return;
+        }
+        
+        const uid = accData.profile.userId;
+
+        // 2. 根据 uid 去查你的所有歌单
+        const plRes = await fetch(`${MY_API_BASE}/user/playlist?uid=${uid}&cookie=${encodeURIComponent(cookie)}&timerstamp=${Date.now()}`);
+        const plData = await plRes.json();
+
+        if (plData.playlist && plData.playlist.length > 0) {
+            box.innerHTML = ''; // 清空提示文字
+            
+            // 把每个歌单渲染成一条带有“导入”按钮的数据
+            plData.playlist.forEach(pl => {
+                const item = document.createElement('div');
+                item.style.cssText = "display:flex; align-items:center; padding:8px 0; border-bottom:1px dashed var(--line-light);";
+                                item.innerHTML = `
+                    <img src="${pl.coverImgUrl}" style="width:36px; height:36px; border-radius:4px; margin-right:10px; border: 1px solid var(--line-light); flex-shrink: 0;">
+                    <div style="flex: 1; min-width: 0; padding-right: 10px;">
+                        <div style="font-size:13px; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text-main);">${pl.name}</div>
+                        <div style="font-size:10px; color:var(--text-sub); margin-top:2px;">共 ${pl.trackCount} 首</div>
+                    </div>
+                    <button class="btn-noshadow icon-btn" style="font-size:11px; padding:4px 10px; height:auto; width:auto; border:1px solid var(--line-color); flex-shrink: 0; box-shadow: 2px 2px 0 var(--line-light);" onclick="importMyPlaylist('${pl.id}')">导入</button>
+                `;
+                box.appendChild(item);
+            });
+        } else {
+            box.innerHTML = '<div style="font-size:12px; text-align:center;">你好像还没有创建歌单哦</div>';
+        }
+    } catch (error) {
+        console.error("获取失败", error);
+        box.innerHTML = '<div style="font-size:12px; text-align:center; color:#d32f2f;">网络出错啦，拉取失败</div>';
+    }
+}
+
+// 真正把点击的歌单导入播放列表的函数
+async function importMyPlaylist(plId) {
+    const cookie = localStorage.getItem('netease_cookie');
+    showToast("正在将歌单拉入播放列表，请稍候...");
+    try {
+        // 获取歌单里的所有歌曲（带上cookie，这样才算你本人的权限）
+        const plRes = await fetch(`${MY_API_BASE}/playlist/detail?id=${plId}&cookie=${encodeURIComponent(cookie)}&timerstamp=${Date.now()}`);
+        const plJson = await plRes.json();
+        
+        if (plJson.playlist && plJson.playlist.tracks) {
+            const tracks = plJson.playlist.tracks.slice(0, 50); // 防卡死，最多一次拉50首
+            
+            tracks.forEach(song => {
+                appState.musicList.push({
+                    id: Date.now() + Math.random(),
+                    title: song.name || "未知歌曲",
+                    singer: song.ar ? song.ar.map(a => a.name).join(' / ') : "未知歌手",
+                    cover: song.al ? song.al.picUrl : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+                    url: `https://music.163.com/song/media/outer/url?id=${song.id}.mp3`
+                });
+            });
+            
+            showToast(`✅ 成功导入 ${tracks.length} 首歌曲！`);
+            saveState(); // 存到本地数据库
+            renderMusicList(); // 刷新屏幕上的播放列表
+            
+            // 如果原本没在放歌，就自动播放第一首
+            if (currentMusicIndex === -1) {
+                playMusic(0); 
+            }
+        }
+    } catch (e) {
+        showToast("❌ 导入歌单失败");
+    }
+}
 
 </script>
 </body>
