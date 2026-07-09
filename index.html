@@ -364,7 +364,7 @@ body.dark-mode .polaroid-caption { color: #111; }
         .tb-avatar-wrap img { width: 40px; height: 40px; border-radius: var(--avatar-radius); border: 1px solid var(--line-color); object-fit: cover; background: #fafafa; }
         .tb-info { display: flex; flex-direction: column; justify-content: center; }
         .tb-name { font-size: 15px; font-weight: 500; color: var(--text-main); display: flex; align-items: center; gap: 4px; }
-        .tb-status { font-size: 12px; margin-top: 3px; display: none; }
+        .tb-status { font-size: 12px; margin-top: 3px; display: none; max-width: 130px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
         .tb-tools { display: flex; align-items: center; gap: 4px; z-index: 2; }
         
@@ -764,6 +764,10 @@ body.time-style-top .message-wrap { margin-top: 18px !important; }
         <!-- 关闭悬浮窗 -->
         <button class="mf-btn" style="border-style: dashed; color: #d32f2f;" onclick="document.getElementById('music-float-widget').classList.remove('show');"><svg viewBox="0 0 24 24" stroke="#d32f2f"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
     </div>
+</div>
+<!-- Emoji急救重置按钮 -->
+<div id="emoji-rescue-btn" onclick="rescueEmoji()" style="position: fixed; right: 10px; top: 100px; background: #ff4444; color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 12px; z-index: 999999; box-shadow: 2px 2px 0 #000; opacity: 0.8; text-align: center; border: 1px solid #111;">
+    清空<br>状态<br>表情
 </div>
     <!-- 更新日志悬浮球 -->
 <div id="update-float-ball" style="display: none; position: fixed; right: 20px; bottom: 120px; width: 44px; height: 44px; background: var(--text-main); color: var(--bg); border-radius: 50%; justify-content: center; align-items: center; box-shadow: 4px 4px 0 var(--line-color); z-index: 99999; cursor: pointer; transition: transform 0.1s;">
@@ -6890,6 +6894,30 @@ async function importMyPlaylist(plId) {
     } catch (e) {
         showToast("❌ 导入歌单失败");
     }
+}
+
+/* ================= Emoji 被挤爆的急救重置按键 ================= */
+function rescueEmoji() {
+    uiConfirm("确定要清空乱码/超长的状态Emoji吗？", "急救重置").then(res => {
+        if (res) {
+            // 1. 强制清空数据库里的垃圾 emoji
+            appState.settings.customEmojis = "";
+            appState.settings.currentStatusEmoji = "";
+            appState.settings.nextStatusChangeTime = 0;
+            
+            // 2. 弹窗问要不要顺手关掉状态显示功能
+            uiConfirm("已强行清空！是否要顺便彻底关闭【状态显示】功能？\n(选确定则关闭，选取消则保留)", "防爆提示").then(closeIt => {
+                if (closeIt) {
+                    appState.settings.enableStatusEmoji = false;
+                }
+                saveState();
+                applySettingsToUI();
+                showToast("急救完成！");
+                // 弄完之后把这个红色急救按钮隐藏掉
+                document.getElementById('emoji-rescue-btn').style.display = 'none';
+            });
+        }
+    });
 }
 
 </script>
