@@ -765,9 +765,16 @@ body.time-style-top .message-wrap { margin-top: 18px !important; }
         <button class="mf-btn" style="border-style: dashed; color: #d32f2f;" onclick="document.getElementById('music-float-widget').classList.remove('show');"><svg viewBox="0 0 24 24" stroke="#d32f2f"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
     </div>
 </div>
-<!-- Emoji急救重置按钮 -->
-<div id="emoji-rescue-btn" onclick="rescueEmoji()" style="position: fixed; right: 10px; top: 100px; background: #ff4444; color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 12px; z-index: 999999; box-shadow: 2px 2px 0 #000; opacity: 0.8; text-align: center; border: 1px solid #111;">
-    清空<br>状态<br>表情
+<!-- 侧边折叠急救模块 -->
+<div id="rescue-sidebar" style="position: fixed; right: -75px; top: 120px; z-index: 999999; display: flex; align-items: stretch; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+    <!-- 把手：平时露在外面的一小截 -->
+    <div onclick="toggleRescueSidebar()" style="background: var(--bg); color: var(--text-main); padding: 10px 4px; border: 1px solid var(--line-color); border-right: none; box-shadow: -2px 2px 0 var(--line-light); cursor: pointer; font-size: 11px; font-weight: bold; writing-mode: vertical-rl; letter-spacing: 2px; border-radius: 6px 0 0 6px; display: flex; align-items: center;">
+        急救
+    </div>
+    <!-- 真正的清除按钮：藏在屏幕外 -->
+    <div onclick="rescueEmoji()" style="background: #ff5555; color: #fff; width: 75px; display: flex; align-items: center; justify-content: center; text-align: center; border: 1px solid #111; border-left: none; cursor: pointer; font-size: 12px; font-weight: bold; line-height: 1.6;">
+        清空<br>状态<br>表情
+    </div>
 </div>
     <!-- 更新日志悬浮球 -->
 <div id="update-float-ball" style="display: none; position: fixed; right: 20px; bottom: 120px; width: 44px; height: 44px; background: var(--text-main); color: var(--bg); border-radius: 50%; justify-content: center; align-items: center; box-shadow: 4px 4px 0 var(--line-color); z-index: 99999; cursor: pointer; transition: transform 0.1s;">
@@ -3014,12 +3021,47 @@ function importCards(e) {
     reader.onload = async (ev) => {
         try {
             const imported = JSON.parse(ev.target.result);
-            if(Array.isArray(imported)) {
-                appState.cards = appState.cards.concat(imported);
-                saveState(); renderCardList(); renderAllowedGroups();
-                uiAlert(`✅ 成功追加导入 ${imported.length} 条字卡`);
-            } else { throw new Error(); }
-        } catch(err) { uiAlert("❌ 文件格式不正确，必须是导出的字卡 JSON"); }
+            
+            // 🌟 智能多通道解析引擎 🌟
+            let rawCards = [];
+            if (Array.isArray(imported)) {
+                // 通道A：当前网站的导出，或者 YumeChatPro 的纯字卡(Deck)导出
+                rawCards = imported;
+            } else if (imported && typeof imported === 'object' && Array.isArray(imported.wordCards)) {
+                // 通道B：YumeChatPro 的“全量数据备份包”，自动从中精准提取字卡数据
+                rawCards = imported.wordCards;
+            }
+
+            // 第一道安检：严格过滤，只有里面真正包含 text（文字内容）的，才承认它是字卡
+            const validCards = rawCards.filter(card => 
+                card && typeof card === 'object' && card.text && String(card.text).trim() !== ''
+            );
+
+            // 如果提取完发现 0 个有效字卡
+            if (validCards.length === 0) {
+                uiAlert("❌ 导入失败：未检测到有效字卡。\n请确保文件是正确的 JSON 字卡备份。");
+                return;
+            }
+
+            // 第二道安检：对有效字卡进行清洗和字段兼容
+            const cleaned = validCards.map(card => {
+                // 兼容另一个网站的 category 字段
+                let groupName = card.group || card.category;
+                
+                return {
+                    text: String(card.text).trim(),
+                    group: (groupName && groupName !== 'undefined') ? String(groupName).trim() : '日常'
+                };
+            });
+
+            // 合并并保存
+            appState.cards = appState.cards.concat(cleaned);
+            saveState(); renderCardList(); renderAllowedGroups();
+            uiAlert(`✅ 成功吸收并导入 ${cleaned.length} 条字卡`);
+
+        } catch(err) { 
+            uiAlert("❌ 文件解析失败：格式损坏或不是 JSON 文件"); 
+        }
     };
     reader.readAsText(file);
     e.target.value = '';
@@ -6897,6 +6939,17 @@ async function importMyPlaylist(plId) {
 }
 
 /* ================= Emoji 被挤爆的急救重置按键 ================= */
+// 控制侧边栏弹出/收回
+function toggleRescueSidebar() {
+    const sidebar = document.getElementById('rescue-sidebar');
+    if (sidebar.style.right === '0px') {
+        sidebar.style.right = '-75px';
+    } else {
+        sidebar.style.right = '0px';
+    }
+}
+
+/* ================= Emoji 被挤爆的急救重置按键 ================= */
 function rescueEmoji() {
     uiConfirm("确定要清空乱码/超长的状态Emoji吗？", "急救重置").then(res => {
         if (res) {
@@ -6913,8 +6966,9 @@ function rescueEmoji() {
                 saveState();
                 applySettingsToUI();
                 showToast("急救完成！");
-                // 弄完之后把这个红色急救按钮隐藏掉
-                document.getElementById('emoji-rescue-btn').style.display = 'none';
+                
+                // 弄完之后把急救侧边栏自动收回去
+                document.getElementById('rescue-sidebar').style.right = '-75px';
             });
         }
     });
