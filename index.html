@@ -2035,7 +2035,7 @@ window.onload = async () => {
     // 👇新增：后台挂机闲置查岗机制 👇
     setInterval(() => {
         // 如果开启了允许主动打电话，且当前没有在通话，每过一段时间有 15% 的概率打给你
-        if (appState.settings.allowAutoCall && !callState.active && Math.random() < 0.15) {
+        if (appState.settings.allowAutoCall && !callState.active && Math.random() < 0.05) {
             triggerIncomingCall();
         }
     }, 100 * 1000); // 现在是每 60 秒做一次概率判定，你可以修改时间
@@ -3110,7 +3110,10 @@ function markMyMessagesAsRead() {
     }
 }
 
+let autoReplyTimer = null; // 【新增】防刷屏全局锁
 function triggerAutoReply() {
+    if(autoReplyTimer) clearTimeout(autoReplyTimer); // 【新增】如果你连续发消息，就打断它上一次的思考，重新计时！
+
     const role = getCurrentRole();
     if(!role.allowedCardGroups) role.allowedCardGroups = [...new Set(appState.cards.map(c => c.group))];
     if(!role.allowedStickerGroups) role.allowedStickerGroups = [...new Set(appState.stickers.map(s => s.group))];
@@ -3127,7 +3130,7 @@ if(pool.length === 0) pool = [{ text: "嗯嗯", type: 'text' }];
 
     const readDelay = Math.random() * 1500 + 500;
     
-    setTimeout(() => {
+    autoReplyTimer = setTimeout(() => { // 【修改】给这个定时器加上锁的名字
         markMyMessagesAsRead(); 
 
         if (appState.settings.allowReadNoReply && Math.random() < 0.20) {
@@ -3146,10 +3149,11 @@ if(pool.length === 0) pool = [{ text: "嗯嗯", type: 'text' }];
         if (maxCount > 1) {
             let weights = [];
             for (let i = 1; i <= maxCount; i++) {
-                if (i === 1) weights.push(18);       
-                else if (i === 2) weights.push(15);  
-                else if (i === 3) weights.push(12);  
-                else weights.push(10);               
+                if (i === 1) weights.push(50);       // 回 1 条的权重极高 (最常见)
+                else if (i === 2) weights.push(30);  // 回 2 条的权重较高
+                else if (i === 3) weights.push(10);  // 回 3 条的概率变小
+                else if (i === 4) weights.push(5);   // 回 4 条的概率很小
+                else weights.push(1);                // 5条及以上的概率极低 (除非小概率大爆发)
             }
             let totalW = weights.reduce((a, b) => a + b, 0);
             let r = Math.random() * totalW;
@@ -3203,14 +3207,14 @@ if (randomItem.type === 'sys_pat') {
                     const customEmojisStr = appState.settings.customEmojis || "";
                     const emojis = customEmojisStr.split(/[\s\n]+/).filter(e => e.trim() !== "");
                     
-                    if (itemToSent.type === 'text' && emojis.length > 0 && Math.random() < 0.20) {
+                    if (itemToSent.type === 'text' && emojis.length > 0 && Math.random() < 0.07) {
                         const emj = emojis[Math.floor(Math.random() * emojis.length)];
                         if (Math.random() < 0.5) itemToSent.text = itemToSent.text + " " + emj;
                         else itemToSent.text = emj + " " + itemToSent.text;
                     }
 
                     let imgToMix = null;
-                    if (itemToSent.type === 'text' && validStickers.length > 0 && Math.random() < 0.20) {
+                    if (itemToSent.type === 'text' && validStickers.length > 0 && Math.random() < 0.10) {
                         const randomSticker = validStickers[Math.floor(Math.random() * validStickers.length)];
                         itemToSent.type = 'mix'; 
                         imgToMix = randomSticker.text; 
